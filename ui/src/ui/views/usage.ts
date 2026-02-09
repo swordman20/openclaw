@@ -1,6 +1,7 @@
 import { html, svg, nothing } from "lit";
 import { formatDurationCompact } from "../../../../src/infra/format-time/format-duration.ts";
 import { extractQueryTerms, filterSessionsByQuery, parseToolSummary } from "../usage-helpers.ts";
+import { t } from "../i18n.ts";
 
 // Inline styles for usage view (app uses light DOM, so static styles don't work)
 const usageStylesString = `
@@ -2124,6 +2125,7 @@ export type TimeSeriesPoint = {
 };
 
 export type UsageProps = {
+  language: import("../storage.ts").Language;
   loading: boolean;
   error: string | null;
   startDate: string;
@@ -2366,6 +2368,7 @@ function renderUsageMosaic(
   timeZone: "local" | "utc",
   selectedHours: number[],
   onSelectHour: (hour: number, shiftKey: boolean) => void,
+  language: import("../storage.ts").Language,
 ) {
   const stats = buildUsageMosaicStats(sessions, timeZone);
   if (!stats.hasData) {
@@ -2373,12 +2376,12 @@ function renderUsageMosaic(
       <div class="card usage-mosaic">
         <div class="usage-mosaic-header">
           <div>
-            <div class="usage-mosaic-title">Activity by Time</div>
-            <div class="usage-mosaic-sub">Estimates require session timestamps.</div>
+            <div class="usage-mosaic-title">${t("mosaicTitle", language)}</div>
+            <div class="usage-mosaic-sub">${t("mosaicSub", language).replace("${zone}", timeZone)}</div>
           </div>
-          <div class="usage-mosaic-total">${formatTokens(0)} tokens</div>
+          <div class="usage-mosaic-total">0 ${t("metricTokens", language)}</div>
         </div>
-        <div class="muted" style="padding: 12px; text-align: center;">No timeline data yet.</div>
+        <div class="muted" style="padding: 12px; text-align: center;">${t("mosaicNoData", language)}</div>
       </div>
     `;
   }
@@ -2390,16 +2393,16 @@ function renderUsageMosaic(
     <div class="card usage-mosaic">
       <div class="usage-mosaic-header">
         <div>
-          <div class="usage-mosaic-title">Activity by Time</div>
+          <div class="usage-mosaic-title">${t("mosaicTitle", language)}</div>
           <div class="usage-mosaic-sub">
-            Estimated from session spans (first/last activity). Time zone: ${timeZone === "utc" ? "UTC" : "Local"}.
+            ${t("mosaicSub", language).replace("${zone}", timeZone === "utc" ? "UTC" : "Local")}
           </div>
         </div>
-        <div class="usage-mosaic-total">${formatTokens(stats.totalTokens)} tokens</div>
+        <div class="usage-mosaic-total">${formatTokens(stats.totalTokens)} ${t("metricTokens", language)}</div>
       </div>
       <div class="usage-mosaic-grid">
         <div class="usage-mosaic-section">
-          <div class="usage-mosaic-section-title">Day of Week</div>
+          <div class="usage-mosaic-section-title">${t("mosaicDayOfWeek", language)}</div>
           <div class="usage-daypart-grid">
             ${stats.weekdayTotals.map((part) => {
               const intensity = Math.min(part.tokens / maxWeekday, 1);
@@ -2416,7 +2419,7 @@ function renderUsageMosaic(
         </div>
         <div class="usage-mosaic-section">
           <div class="usage-mosaic-section-title">
-            <span>Hours</span>
+            <span>${t("mosaicHours", language)}</span>
             <span class="usage-mosaic-sub">0 → 23</span>
           </div>
           <div class="usage-hour-grid">
@@ -2437,16 +2440,16 @@ function renderUsageMosaic(
             })}
           </div>
           <div class="usage-hour-labels">
-            <span>Midnight</span>
+            <span>${t("mosaicMidnight", language)}</span>
             <span>4am</span>
             <span>8am</span>
-            <span>Noon</span>
+            <span>${t("mosaicNoon", language)}</span>
             <span>4pm</span>
             <span>8pm</span>
           </div>
           <div class="usage-hour-legend">
             <span></span>
-            Low → High token density
+            ${t("mosaicDensity", language)}
           </div>
         </div>
       </div>
@@ -3105,6 +3108,7 @@ function renderFilterChips(
   onClearHours: () => void,
   onClearSessions: () => void,
   onClearFilters: () => void,
+  language: import("../storage.ts").Language,
 ) {
   const hasFilters =
     selectedDays.length > 0 || selectedHours.length > 0 || selectedSessions.length > 0;
@@ -3136,8 +3140,8 @@ function renderFilterChips(
         selectedDays.length > 0
           ? html`
             <div class="filter-chip">
-              <span class="filter-chip-label">Days: ${daysLabel}</span>
-              <button class="filter-chip-remove" @click=${onClearDays} title="Remove filter">×</button>
+              <span class="filter-chip-label">${t("filterDays", language)}: ${daysLabel}</span>
+              <button class="filter-chip-remove" @click=${onClearDays} title="${t("btnRemoveFilter", language)}">×</button>
             </div>
           `
           : nothing
@@ -3146,8 +3150,8 @@ function renderFilterChips(
         selectedHours.length > 0
           ? html`
             <div class="filter-chip">
-              <span class="filter-chip-label">Hours: ${hoursLabel}</span>
-              <button class="filter-chip-remove" @click=${onClearHours} title="Remove filter">×</button>
+              <span class="filter-chip-label">${t("filterHours", language)}: ${hoursLabel}</span>
+              <button class="filter-chip-remove" @click=${onClearHours} title="${t("btnRemoveFilter", language)}">×</button>
             </div>
           `
           : nothing
@@ -3156,8 +3160,8 @@ function renderFilterChips(
         selectedSessions.length > 0
           ? html`
             <div class="filter-chip" title="${sessionsFullName}">
-              <span class="filter-chip-label">Session: ${sessionsLabel}</span>
-              <button class="filter-chip-remove" @click=${onClearSessions} title="Remove filter">×</button>
+              <span class="filter-chip-label">${t("filterSession", language)}: ${sessionsLabel}</span>
+              <button class="filter-chip-remove" @click=${onClearSessions} title="${t("btnRemoveFilter", language)}">×</button>
             </div>
           `
           : nothing
@@ -3166,7 +3170,7 @@ function renderFilterChips(
         (selectedDays.length > 0 || selectedHours.length > 0) && selectedSessions.length > 0
           ? html`
             <button class="btn btn-sm filter-clear-btn" @click=${onClearFilters}>
-              Clear All
+              ${t("btnClearSelection", language)}
             </button>
           `
           : nothing
@@ -3182,12 +3186,13 @@ function renderDailyChartCompact(
   dailyChartMode: "total" | "by-type",
   onDailyChartModeChange: (mode: "total" | "by-type") => void,
   onSelectDay: (day: string, shiftKey: boolean) => void,
+  language: import("../storage.ts").Language,
 ) {
   if (!daily.length) {
     return html`
       <div class="daily-chart-compact">
-        <div class="sessions-panel-title">Daily Usage</div>
-        <div class="muted" style="padding: 20px; text-align: center">No data</div>
+        <div class="sessions-panel-title">${t("dailyTitle", language)}</div>
+        <div class="muted" style="padding: 20px; text-align: center">${t("msgNoDataInRange", language)}</div>
       </div>
     `;
   }
@@ -3208,16 +3213,16 @@ function renderDailyChartCompact(
             class="toggle-btn ${dailyChartMode === "total" ? "active" : ""}"
             @click=${() => onDailyChartModeChange("total")}
           >
-            Total
+            ${t("toggleTotal", language)}
           </button>
           <button
             class="toggle-btn ${dailyChartMode === "by-type" ? "active" : ""}"
             @click=${() => onDailyChartModeChange("by-type")}
           >
-            By Type
+            ${t("toggleByType", language)}
           </button>
         </div>
-        <div class="card-title">Daily ${isTokenMode ? "Token" : "Cost"} Usage</div>
+        <div class="card-title">${isTokenMode ? t("dailyTokenTitle", language) : t("dailyCostTitle", language)}</div>
       </div>
       <div class="daily-chart">
         <div class="daily-chart-bars" style="--bar-max-width: ${barMaxWidth}px">
@@ -3249,16 +3254,16 @@ function renderDailyChartCompact(
               dailyChartMode === "by-type"
                 ? isTokenMode
                   ? [
-                      `Output ${formatTokens(d.output)}`,
-                      `Input ${formatTokens(d.input)}`,
-                      `Cache write ${formatTokens(d.cacheWrite)}`,
-                      `Cache read ${formatTokens(d.cacheRead)}`,
+                      `${t("itemOutput", language)} ${formatTokens(d.output)}`,
+                      `${t("itemInput", language)} ${formatTokens(d.input)}`,
+                      `${t("itemCacheWrite", language)} ${formatTokens(d.cacheWrite)}`,
+                      `${t("itemCacheRead", language)} ${formatTokens(d.cacheRead)}`,
                     ]
                   : [
-                      `Output ${formatCost(d.outputCost ?? 0)}`,
-                      `Input ${formatCost(d.inputCost ?? 0)}`,
-                      `Cache write ${formatCost(d.cacheWriteCost ?? 0)}`,
-                      `Cache read ${formatCost(d.cacheReadCost ?? 0)}`,
+                      `${t("itemOutput", language)} ${formatCost(d.outputCost ?? 0)}`,
+                      `${t("itemInput", language)} ${formatCost(d.inputCost ?? 0)}`,
+                      `${t("itemCacheWrite", language)} ${formatCost(d.cacheWriteCost ?? 0)}`,
+                      `${t("itemCacheRead", language)} ${formatCost(d.cacheReadCost ?? 0)}`,
                     ]
                 : [];
             const totalLabel = isTokenMode ? formatTokens(d.totalTokens) : formatCost(d.totalCost);
@@ -3312,7 +3317,7 @@ function renderDailyChartCompact(
   `;
 }
 
-function renderCostBreakdownCompact(totals: UsageTotals, mode: "tokens" | "cost") {
+function renderCostBreakdownCompact(totals: UsageTotals, mode: "tokens" | "cost", language: import("../storage.ts").Language) {
   const breakdown = getCostBreakdown(totals);
   const isTokenMode = mode === "tokens";
   const totalTokens = totals.totalTokens || 1;
@@ -3325,25 +3330,25 @@ function renderCostBreakdownCompact(totals: UsageTotals, mode: "tokens" | "cost"
 
   return html`
     <div class="cost-breakdown cost-breakdown-compact">
-      <div class="cost-breakdown-header">${isTokenMode ? "Tokens" : "Cost"} by Type</div>
+      <div class="cost-breakdown-header">${isTokenMode ? t("breakdownTokenTitle", language) : t("breakdownCostTitle", language)}</div>
       <div class="cost-breakdown-bar">
         <div class="cost-segment output" style="width: ${(isTokenMode ? tokenPcts.output : breakdown.output.pct).toFixed(1)}%"
-          title="Output: ${isTokenMode ? formatTokens(totals.output) : formatCost(breakdown.output.cost)}"></div>
+          title="${t("itemOutput", language)}: ${isTokenMode ? formatTokens(totals.output) : formatCost(breakdown.output.cost)}"></div>
         <div class="cost-segment input" style="width: ${(isTokenMode ? tokenPcts.input : breakdown.input.pct).toFixed(1)}%"
-          title="Input: ${isTokenMode ? formatTokens(totals.input) : formatCost(breakdown.input.cost)}"></div>
+          title="${t("itemInput", language)}: ${isTokenMode ? formatTokens(totals.input) : formatCost(breakdown.input.cost)}"></div>
         <div class="cost-segment cache-write" style="width: ${(isTokenMode ? tokenPcts.cacheWrite : breakdown.cacheWrite.pct).toFixed(1)}%"
-          title="Cache Write: ${isTokenMode ? formatTokens(totals.cacheWrite) : formatCost(breakdown.cacheWrite.cost)}"></div>
+          title="${t("itemCacheWrite", language)}: ${isTokenMode ? formatTokens(totals.cacheWrite) : formatCost(breakdown.cacheWrite.cost)}"></div>
         <div class="cost-segment cache-read" style="width: ${(isTokenMode ? tokenPcts.cacheRead : breakdown.cacheRead.pct).toFixed(1)}%"
-          title="Cache Read: ${isTokenMode ? formatTokens(totals.cacheRead) : formatCost(breakdown.cacheRead.cost)}"></div>
+          title="${t("itemCacheRead", language)}: ${isTokenMode ? formatTokens(totals.cacheRead) : formatCost(breakdown.cacheRead.cost)}"></div>
       </div>
       <div class="cost-breakdown-legend">
-        <span class="legend-item"><span class="legend-dot output"></span>Output ${isTokenMode ? formatTokens(totals.output) : formatCost(breakdown.output.cost)}</span>
-        <span class="legend-item"><span class="legend-dot input"></span>Input ${isTokenMode ? formatTokens(totals.input) : formatCost(breakdown.input.cost)}</span>
-        <span class="legend-item"><span class="legend-dot cache-write"></span>Cache Write ${isTokenMode ? formatTokens(totals.cacheWrite) : formatCost(breakdown.cacheWrite.cost)}</span>
-        <span class="legend-item"><span class="legend-dot cache-read"></span>Cache Read ${isTokenMode ? formatTokens(totals.cacheRead) : formatCost(breakdown.cacheRead.cost)}</span>
+        <span class="legend-item"><span class="legend-dot output"></span>${t("itemOutput", language)} ${isTokenMode ? formatTokens(totals.output) : formatCost(breakdown.output.cost)}</span>
+        <span class="legend-item"><span class="legend-dot input"></span>${t("itemInput", language)} ${isTokenMode ? formatTokens(totals.input) : formatCost(breakdown.input.cost)}</span>
+        <span class="legend-item"><span class="legend-dot cache-write"></span>${t("itemCacheWrite", language)} ${isTokenMode ? formatTokens(totals.cacheWrite) : formatCost(breakdown.cacheWrite.cost)}</span>
+        <span class="legend-item"><span class="legend-dot cache-read"></span>${t("itemCacheRead", language)} ${isTokenMode ? formatTokens(totals.cacheRead) : formatCost(breakdown.cacheRead.cost)}</span>
       </div>
       <div class="cost-breakdown-total">
-        Total: ${isTokenMode ? formatTokens(totals.totalTokens) : formatCost(totals.totalCost)}
+        ${t("labelTotal", language)} ${isTokenMode ? formatTokens(totals.totalTokens) : formatCost(totals.totalCost)}
       </div>
     </div>
   `;
@@ -3417,6 +3422,7 @@ function renderUsageInsights(
   errorHours: Array<{ label: string; value: string; sub?: string }>,
   sessionCount: number,
   totalSessions: number,
+  language: import("../storage.ts").Language,
 ) {
   if (!totals) {
     return nothing;
@@ -3442,13 +3448,13 @@ function renderUsageInsights(
     stats.durationCount > 0
       ? (formatDurationCompact(stats.avgDurationMs, { spaced: true }) ?? "—")
       : "—";
-  const cacheHint = "Cache hit rate = cache read / (input + cache read). Higher is better.";
-  const errorHint = "Error rate = errors / total messages. Lower is better.";
-  const throughputHint = "Throughput shows tokens per minute over active time. Higher is better.";
-  const tokensHint = "Average tokens per message in this range.";
+  const cacheHint = t("hintCacheHit", language);
+  const errorHint = t("hintErrorRate", language);
+  const throughputHint = t("hintThroughput", language);
+  const tokensHint = t("hintAvgTokens", language);
   const costHint = showCostHint
-    ? "Average cost per message when providers report costs. Cost data is missing for some or all sessions in this range."
-    : "Average cost per message when providers report costs.";
+    ? t("hintAvgCostMissing", language)
+    : t("hintAvgCost", language);
 
   const errorDays = aggregates.daily
     .filter((day) => day.messages > 0 && day.errors > 0)
@@ -3493,37 +3499,37 @@ function renderUsageInsights(
 
   return html`
     <section class="card" style="margin-top: 16px;">
-      <div class="card-title">Usage Overview</div>
+      <div class="card-title">${t("insightTitle", language)}</div>
       <div class="usage-summary-grid">
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Messages
-            <span class="usage-summary-hint" title="Total user + assistant messages in range.">?</span>
+            ${t("insightMessages", language)}
+            <span class="usage-summary-hint" title="${t("hintMessages", language)}">?</span>
           </div>
           <div class="usage-summary-value">${aggregates.messages.total}</div>
           <div class="usage-summary-sub">
-            ${aggregates.messages.user} user · ${aggregates.messages.assistant} assistant
+            ${aggregates.messages.user} ${t("roleUser", language).toLowerCase()} · ${aggregates.messages.assistant} ${t("roleAssistant", language).toLowerCase()}
           </div>
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Tool Calls
-            <span class="usage-summary-hint" title="Total tool call count across sessions.">?</span>
+            ${t("insightToolCalls", language)}
+            <span class="usage-summary-hint" title="${t("hintToolCalls", language)}">?</span>
           </div>
           <div class="usage-summary-value">${aggregates.tools.totalCalls}</div>
           <div class="usage-summary-sub">${aggregates.tools.uniqueTools} tools used</div>
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Errors
-            <span class="usage-summary-hint" title="Total message/tool errors in range.">?</span>
+            ${t("insightErrors", language)}
+            <span class="usage-summary-hint" title="${t("hintErrors", language)}">?</span>
           </div>
           <div class="usage-summary-value">${aggregates.messages.errors}</div>
-          <div class="usage-summary-sub">${aggregates.messages.toolResults} tool results</div>
+          <div class="usage-summary-sub">${aggregates.messages.toolResults} ${t("roleToolResult", language).toLowerCase()}</div>
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Avg Tokens / Msg
+            ${t("insightAvgTokens", language)}
             <span class="usage-summary-hint" title=${tokensHint}>?</span>
           </div>
           <div class="usage-summary-value">${formatTokens(avgTokens)}</div>
@@ -3531,7 +3537,7 @@ function renderUsageInsights(
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Avg Cost / Msg
+            ${t("insightAvgCost", language)}
             <span class="usage-summary-hint" title=${costHint}>?</span>
           </div>
           <div class="usage-summary-value">${formatCost(avgCost, 4)}</div>
@@ -3539,15 +3545,15 @@ function renderUsageInsights(
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Sessions
-            <span class="usage-summary-hint" title="Distinct sessions in the range.">?</span>
+            ${t("insightSessions", language)}
+            <span class="usage-summary-hint" title="${t("hintSessions", language)}">?</span>
           </div>
           <div class="usage-summary-value">${sessionCount}</div>
           <div class="usage-summary-sub">of ${totalSessions} in range</div>
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Throughput
+            ${t("insightThroughput", language)}
             <span class="usage-summary-hint" title=${throughputHint}>?</span>
           </div>
           <div class="usage-summary-value">${throughputLabel}</div>
@@ -3555,7 +3561,7 @@ function renderUsageInsights(
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Error Rate
+            ${t("insightErrorRate", language)}
             <span class="usage-summary-hint" title=${errorHint}>?</span>
           </div>
           <div class="usage-summary-value ${errorRatePct > 5 ? "bad" : errorRatePct > 1 ? "warn" : "good"}">${errorRatePct.toFixed(2)}%</div>
@@ -3565,7 +3571,7 @@ function renderUsageInsights(
         </div>
         <div class="usage-summary-card">
           <div class="usage-summary-title">
-            Cache Hit Rate
+            ${t("insightCacheHit", language)}
             <span class="usage-summary-hint" title=${cacheHint}>?</span>
           </div>
           <div class="usage-summary-value ${cacheHitRate > 0.6 ? "good" : cacheHitRate > 0.3 ? "warn" : "bad"}">${cacheHitLabel}</div>
@@ -3575,13 +3581,13 @@ function renderUsageInsights(
         </div>
       </div>
       <div class="usage-insights-grid">
-        ${renderInsightList("Top Models", topModels, "No model data")}
-        ${renderInsightList("Top Providers", topProviders, "No provider data")}
-        ${renderInsightList("Top Tools", topTools, "No tool calls")}
-        ${renderInsightList("Top Agents", topAgents, "No agent data")}
-        ${renderInsightList("Top Channels", topChannels, "No channel data")}
-        ${renderPeakErrorList("Peak Error Days", errorDays, "No error data")}
-        ${renderPeakErrorList("Peak Error Hours", errorHours, "No error data")}
+        ${renderInsightList(t("insightTopModels", language), topModels, t("noDataModel", language))}
+        ${renderInsightList(t("insightTopProviders", language), topProviders, t("noDataProvider", language))}
+        ${renderInsightList(t("insightTopTools", language), topTools, t("noDataTool", language))}
+        ${renderInsightList(t("insightTopAgents", language), topAgents, t("noDataAgent", language))}
+        ${renderInsightList(t("insightTopChannels", language), topChannels, t("noDataChannel", language))}
+        ${renderPeakErrorList(t("insightPeakErrorDays", language), errorDays, t("noDataError", language))}
+        ${renderPeakErrorList(t("insightPeakErrorHours", language), errorHours, t("noDataError", language))}
       </div>
     </section>
   `;
@@ -3603,6 +3609,7 @@ function renderSessionsCard(
   visibleColumns: UsageColumnId[],
   totalSessions: number,
   onClearSessions: () => void,
+  language: import("../storage.ts").Language,
 ) {
   const showColumn = (id: UsageColumnId) => visibleColumns.includes(id);
   const formatSessionListLabel = (s: UsageSessionEntry): string => {
@@ -3705,40 +3712,40 @@ function renderSessionsCard(
   return html`
     <div class="card sessions-card">
       <div class="sessions-card-header">
-        <div class="card-title">Sessions</div>
+        <div class="card-title">${t("sessionsTitle", language)}</div>
         <div class="sessions-card-count">
-          ${sessions.length} shown${totalSessions !== sessions.length ? ` · ${totalSessions} total` : ""}
+          ${sessions.length} ${t("sessionsShown", language)}${totalSessions !== sessions.length ? ` · ${totalSessions} ${t("sessionsTotal", language)}` : ""}
         </div>
       </div>
       <div class="sessions-card-meta">
         <div class="sessions-card-stats">
-          <span>${isTokenMode ? formatTokens(avgValue) : formatCost(avgValue)} avg</span>
-          <span>${totalErrors} errors</span>
+          <span>${isTokenMode ? formatTokens(avgValue) : formatCost(avgValue)} ${t("sessionsAvg", language)}</span>
+          <span>${totalErrors} ${t("sortErrors", language).toLowerCase()}</span>
         </div>
         <div class="chart-toggle small">
           <button
             class="toggle-btn ${sessionsTab === "all" ? "active" : ""}"
             @click=${() => onSessionsTabChange("all")}
           >
-            All
+            ${t("tabAll", language)}
           </button>
           <button
             class="toggle-btn ${sessionsTab === "recent" ? "active" : ""}"
             @click=${() => onSessionsTabChange("recent")}
           >
-            Recently viewed
+            ${t("tabRecent", language)}
           </button>
         </div>
         <label class="sessions-sort">
-          <span>Sort</span>
+          <span>${t("sortSort", language)}</span>
           <select
             @change=${(e: Event) => onSessionSortChange((e.target as HTMLSelectElement).value as typeof sessionSort)}
           >
-            <option value="cost" ?selected=${sessionSort === "cost"}>Cost</option>
-            <option value="errors" ?selected=${sessionSort === "errors"}>Errors</option>
-            <option value="messages" ?selected=${sessionSort === "messages"}>Messages</option>
-            <option value="recent" ?selected=${sessionSort === "recent"}>Recent</option>
-            <option value="tokens" ?selected=${sessionSort === "tokens"}>Tokens</option>
+            <option value="cost" ?selected=${sessionSort === "cost"}>${t("sortCost", language)}</option>
+            <option value="errors" ?selected=${sessionSort === "errors"}>${t("sortErrors", language)}</option>
+            <option value="messages" ?selected=${sessionSort === "messages"}>${t("sortMessages", language)}</option>
+            <option value="recent" ?selected=${sessionSort === "recent"}>${t("sortRecent", language)}</option>
+            <option value="tokens" ?selected=${sessionSort === "tokens"}>${t("sortTokens", language)}</option>
           </select>
         </label>
         <button
@@ -3752,7 +3759,7 @@ function renderSessionsCard(
           selectedCount > 0
             ? html`
                 <button class="btn btn-sm sessions-action-btn sessions-clear-btn" @click=${onClearSessions}>
-                  Clear Selection
+                  ${t("btnClearSelection", language)}
                 </button>
               `
             : nothing
@@ -3762,7 +3769,7 @@ function renderSessionsCard(
         sessionsTab === "recent"
           ? recentEntries.length === 0
             ? html`
-                <div class="muted" style="padding: 20px; text-align: center">No recent sessions</div>
+                <div class="muted" style="padding: 20px; text-align: center">${t("noRecentSessions", language)}</div>
               `
             : html`
                 <div class="session-bars" style="max-height: 220px; margin-top: 6px;">
@@ -3785,13 +3792,13 @@ function renderSessionsCard(
                         <div class="session-bar-actions">
                           <button
                             class="session-copy-btn"
-                            title="Copy session name"
+                            title="${t("btnCopy", language)}"
                             @click=${(e: MouseEvent) => {
                               e.stopPropagation();
                               void copySessionName(s);
                             }}
                           >
-                            Copy
+                            ${t("btnCopy", language)}
                           </button>
                           <div class="session-bar-value">${isTokenMode ? formatTokens(value) : formatCost(value)}</div>
                         </div>
@@ -3893,11 +3900,11 @@ function renderEmptyDetailState() {
   return nothing;
 }
 
-function renderSessionSummary(session: UsageSessionEntry) {
+function renderSessionSummary(session: UsageSessionEntry, language: import("../storage.ts").Language) {
   const usage = session.usage;
   if (!usage) {
     return html`
-      <div class="muted">No usage data for this session.</div>
+      <div class="muted">${t("msgNoUsageData", language)}</div>
     `;
   }
 
@@ -3905,27 +3912,27 @@ function renderSessionSummary(session: UsageSessionEntry) {
 
   const badges: string[] = [];
   if (session.channel) {
-    badges.push(`channel:${session.channel}`);
+    badges.push(`${t("filterChannel", language)}:${session.channel}`);
   }
   if (session.agentId) {
-    badges.push(`agent:${session.agentId}`);
+    badges.push(`${t("filterAgent", language)}:${session.agentId}`);
   }
   if (session.modelProvider || session.providerOverride) {
-    badges.push(`provider:${session.modelProvider ?? session.providerOverride}`);
+    badges.push(`${t("filterProvider", language)}:${session.modelProvider ?? session.providerOverride}`);
   }
   if (session.model) {
-    badges.push(`model:${session.model}`);
+    badges.push(`${t("filterModel", language)}:${session.model}`);
   }
 
   const toolItems =
     usage.toolUsage?.tools.slice(0, 6).map((tool) => ({
       label: tool.name,
       value: `${tool.count}`,
-      sub: "calls",
+      sub: t("subCalls", language),
     })) ?? [];
   const modelItems =
     usage.modelUsage?.slice(0, 6).map((entry) => ({
-      label: entry.model ?? "unknown",
+      label: entry.model ?? t("unknown", language),
       value: formatCost(entry.totals.totalCost),
       sub: formatTokens(entry.totals.totalTokens),
     })) ?? [];
@@ -3934,29 +3941,29 @@ function renderSessionSummary(session: UsageSessionEntry) {
     ${badges.length > 0 ? html`<div class="usage-badges">${badges.map((b) => html`<span class="usage-badge">${b}</span>`)}</div>` : nothing}
     <div class="session-summary-grid">
       <div class="session-summary-card">
-        <div class="session-summary-title">Messages</div>
+        <div class="session-summary-title">${t("insightMessages", language)}</div>
         <div class="session-summary-value">${usage.messageCounts?.total ?? 0}</div>
-        <div class="session-summary-meta">${usage.messageCounts?.user ?? 0} user · ${usage.messageCounts?.assistant ?? 0} assistant</div>
+        <div class="session-summary-meta">${usage.messageCounts?.user ?? 0} ${t("roleUser", language).toLowerCase()} · ${usage.messageCounts?.assistant ?? 0} ${t("roleAssistant", language).toLowerCase()}</div>
       </div>
       <div class="session-summary-card">
-        <div class="session-summary-title">Tool Calls</div>
+        <div class="session-summary-title">${t("insightToolCalls", language)}</div>
         <div class="session-summary-value">${usage.toolUsage?.totalCalls ?? 0}</div>
-        <div class="session-summary-meta">${usage.toolUsage?.uniqueTools ?? 0} tools</div>
+        <div class="session-summary-meta">${usage.toolUsage?.uniqueTools ?? 0} ${t("insightTopTools", language).toLowerCase().replace("top ", "")}</div>
       </div>
       <div class="session-summary-card">
-        <div class="session-summary-title">Errors</div>
+        <div class="session-summary-title">${t("insightErrors", language)}</div>
         <div class="session-summary-value">${usage.messageCounts?.errors ?? 0}</div>
-        <div class="session-summary-meta">${usage.messageCounts?.toolResults ?? 0} tool results</div>
+        <div class="session-summary-meta">${usage.messageCounts?.toolResults ?? 0} ${t("roleToolResult", language).toLowerCase()}</div>
       </div>
       <div class="session-summary-card">
-        <div class="session-summary-title">Duration</div>
+        <div class="session-summary-title">${t("metricDuration", language)}</div>
         <div class="session-summary-value">${formatDurationCompact(usage.durationMs, { spaced: true }) ?? "—"}</div>
         <div class="session-summary-meta">${formatTs(usage.firstActivity)} → ${formatTs(usage.lastActivity)}</div>
       </div>
     </div>
     <div class="usage-insights-grid" style="margin-top: 12px;">
-      ${renderInsightList("Top Tools", toolItems, "No tool calls")}
-      ${renderInsightList("Model Mix", modelItems, "No model data")}
+      ${renderInsightList(t("insightTopTools", language), toolItems, t("noDataTool", language))}
+      ${renderInsightList(t("insightTopModels", language), modelItems, t("noDataModel", language))}
     </div>
   `;
 }
@@ -3990,6 +3997,7 @@ function renderSessionDetailPanel(
   contextExpanded: boolean,
   onToggleContextExpanded: () => void,
   onClose: () => void,
+  language: import("../storage.ts").Language,
 ) {
   const label = session.label || session.key;
   const displayLabel = label.length > 50 ? label.slice(0, 50) + "…" : label;
@@ -4011,10 +4019,10 @@ function renderSessionDetailPanel(
               : nothing
           }
         </div>
-        <button class="session-close-btn" @click=${onClose} title="Close session details">×</button>
+        <button class="session-close-btn" @click=${onClose} title="${t("btnCloseSession", language)}">×</button>
       </div>
       <div class="session-detail-content">
-        ${renderSessionSummary(session)}
+        ${renderSessionSummary(session, language)}
         <div class="session-detail-row">
           ${renderTimeSeriesCompact(
             timeSeries,
@@ -4026,6 +4034,7 @@ function renderSessionDetailPanel(
             startDate,
             endDate,
             selectedDays,
+            language,
           )}
         </div>
         <div class="session-detail-bottom">
@@ -4040,8 +4049,9 @@ function renderSessionDetailPanel(
             onLogFilterHasToolsChange,
             onLogFilterQueryChange,
             onLogFilterClear,
+            language,
           )}
-          ${renderContextPanel(session.contextWeight, usage, contextExpanded, onToggleContextExpanded)}
+          ${renderContextPanel(session.contextWeight, usage, contextExpanded, onToggleContextExpanded, language)}
         </div>
       </div>
     </div>
@@ -4055,21 +4065,22 @@ function renderTimeSeriesCompact(
   onModeChange: (mode: "cumulative" | "per-turn") => void,
   breakdownMode: "total" | "by-type",
   onBreakdownChange: (mode: "total" | "by-type") => void,
-  startDate?: string,
-  endDate?: string,
-  selectedDays?: string[],
+  startDate: string | undefined,
+  endDate: string | undefined,
+  selectedDays: string[] | undefined,
+  language: import("../storage.ts").Language,
 ) {
   if (loading) {
     return html`
       <div class="session-timeseries-compact">
-        <div class="muted" style="padding: 20px; text-align: center">Loading...</div>
+        <div class="muted" style="padding: 20px; text-align: center">${t("chatLoading", language)}</div>
       </div>
     `;
   }
   if (!timeSeries || timeSeries.points.length < 2) {
     return html`
       <div class="session-timeseries-compact">
-        <div class="muted" style="padding: 20px; text-align: center">No timeline data</div>
+        <div class="muted" style="padding: 20px; text-align: center">${t("msgNoTimeline", language)}</div>
       </div>
     `;
   }
@@ -4094,7 +4105,9 @@ function renderTimeSeriesCompact(
   if (points.length < 2) {
     return html`
       <div class="session-timeseries-compact">
-        <div class="muted" style="padding: 20px; text-align: center">No data in range</div>
+      <div class="session-timeseries-compact">
+        <div class="muted" style="padding: 20px; text-align: center">${t("msgNoDataInRange", language)}</div>
+      </div>
       </div>
     `;
   }
@@ -4136,20 +4149,20 @@ function renderTimeSeriesCompact(
   return html`
     <div class="session-timeseries-compact">
       <div class="timeseries-header-row">
-        <div class="card-title" style="font-size: 13px;">Usage Over Time</div>
+        <div class="card-title" style="font-size: 13px;">${t("usageOverTime", language)}</div>
         <div class="timeseries-controls">
           <div class="chart-toggle small">
             <button
               class="toggle-btn ${!isCumulative ? "active" : ""}"
               @click=${() => onModeChange("per-turn")}
             >
-              Per Turn
+              ${t("togglePerTurn", language)}
             </button>
             <button
               class="toggle-btn ${isCumulative ? "active" : ""}"
               @click=${() => onModeChange("cumulative")}
             >
-              Cumulative
+              ${t("toggleCumulative", language)}
             </button>
           </div>
           ${
@@ -4160,13 +4173,13 @@ function renderTimeSeriesCompact(
                       class="toggle-btn ${breakdownMode === "total" ? "active" : ""}"
                       @click=${() => onBreakdownChange("total")}
                     >
-                      Total
+                      ${t("toggleTotal", language)}
                     </button>
                     <button
                       class="toggle-btn ${breakdownMode === "by-type" ? "active" : ""}"
                       @click=${() => onBreakdownChange("by-type")}
                     >
-                      By Type
+                      ${t("toggleByType", language)}
                     </button>
                   </div>
                 `
@@ -4276,11 +4289,12 @@ function renderContextPanel(
   usage: UsageSessionEntry["usage"],
   expanded: boolean,
   onToggleExpanded: () => void,
+  language: import("../storage.ts").Language,
 ) {
   if (!contextWeight) {
     return html`
       <div class="context-details-panel">
-        <div class="muted" style="padding: 20px; text-align: center">No context data</div>
+        <div class="muted" style="padding: 20px; text-align: center">${t("msgNoContext", language)}</div>
       </div>
     `;
   }
@@ -4322,29 +4336,29 @@ function renderContextPanel(
   return html`
     <div class="context-details-panel">
       <div class="context-breakdown-header">
-        <div class="card-title" style="font-size: 13px;">System Prompt Breakdown</div>
+        <div class="card-title" style="font-size: 13px;">${t("titleSystemPrompt", language)}</div>
         ${
           hasMore
             ? html`<button class="context-expand-btn" @click=${onToggleExpanded}>
-                ${showAll ? "Collapse" : "Expand all"}
+                ${showAll ? t("btnCollapse", language) : t("btnExpandAll", language)}
               </button>`
             : nothing
         }
       </div>
-      <p class="context-weight-desc">${contextPct || "Base context per message"}</p>
+      <p class="context-weight-desc">${contextPct || t("labelBaseContext", language)}</p>
       <div class="context-stacked-bar">
         <div class="context-segment system" style="width: ${pct(systemTokens, totalContextTokens).toFixed(1)}%" title="System: ~${formatTokens(systemTokens)}"></div>
-        <div class="context-segment skills" style="width: ${pct(skillsTokens, totalContextTokens).toFixed(1)}%" title="Skills: ~${formatTokens(skillsTokens)}"></div>
-        <div class="context-segment tools" style="width: ${pct(toolsTokens, totalContextTokens).toFixed(1)}%" title="Tools: ~${formatTokens(toolsTokens)}"></div>
-        <div class="context-segment files" style="width: ${pct(filesTokens, totalContextTokens).toFixed(1)}%" title="Files: ~${formatTokens(filesTokens)}"></div>
+        <div class="context-segment skills" style="width: ${pct(skillsTokens, totalContextTokens).toFixed(1)}%" title="${t("labelSkills", language)}: ~${formatTokens(skillsTokens)}"></div>
+        <div class="context-segment tools" style="width: ${pct(toolsTokens, totalContextTokens).toFixed(1)}%" title="${t("labelTools", language)}: ~${formatTokens(toolsTokens)}"></div>
+        <div class="context-segment files" style="width: ${pct(filesTokens, totalContextTokens).toFixed(1)}%" title="${t("labelFiles", language)}: ~${formatTokens(filesTokens)}"></div>
       </div>
       <div class="context-legend">
         <span class="legend-item"><span class="legend-dot system"></span>Sys ~${formatTokens(systemTokens)}</span>
-        <span class="legend-item"><span class="legend-dot skills"></span>Skills ~${formatTokens(skillsTokens)}</span>
-        <span class="legend-item"><span class="legend-dot tools"></span>Tools ~${formatTokens(toolsTokens)}</span>
-        <span class="legend-item"><span class="legend-dot files"></span>Files ~${formatTokens(filesTokens)}</span>
+        <span class="legend-item"><span class="legend-dot skills"></span>${t("labelSkills", language)} ~${formatTokens(skillsTokens)}</span>
+        <span class="legend-item"><span class="legend-dot tools"></span>${t("labelTools", language)} ~${formatTokens(toolsTokens)}</span>
+        <span class="legend-item"><span class="legend-dot files"></span>${t("labelFiles", language)} ~${formatTokens(filesTokens)}</span>
       </div>
-      <div class="context-total">Total: ~${formatTokens(totalContextTokens)}</div>
+      <div class="context-total">${t("labelTotal", language)} ~${formatTokens(totalContextTokens)}</div>
       <div class="context-breakdown-grid">
         ${
           skillsList.length > 0
@@ -4448,20 +4462,21 @@ function renderSessionLogsCompact(
   onFilterHasToolsChange: (next: boolean) => void,
   onFilterQueryChange: (next: string) => void,
   onFilterClear: () => void,
+  language: import("../storage.ts").Language,
 ) {
   if (loading) {
     return html`
       <div class="session-logs-compact">
-        <div class="session-logs-header">Conversation</div>
-        <div class="muted" style="padding: 20px; text-align: center">Loading...</div>
+        <div class="session-logs-header">${t("titleConversation", language)}</div>
+        <div class="muted" style="padding: 20px; text-align: center">${t("chatLoading", language)}</div>
       </div>
     `;
   }
   if (!logs || logs.length === 0) {
     return html`
       <div class="session-logs-compact">
-        <div class="session-logs-header">Conversation</div>
-        <div class="muted" style="padding: 20px; text-align: center">No messages</div>
+        <div class="session-logs-header">${t("titleConversation", language)}</div>
+        <div class="muted" style="padding: 20px; text-align: center">${t("msgNoMessages", language)}</div>
       </div>
     `;
   }
@@ -4608,6 +4623,7 @@ function renderSessionLogsCompact(
 }
 
 export function renderUsage(props: UsageProps) {
+  const { language } = props;
   // Show loading skeleton if loading and no data yet
   if (props.loading && !props.totals) {
     // Use inline styles since main stylesheet hasn't loaded yet on initial render
@@ -5141,6 +5157,7 @@ export function renderUsage(props: UsageProps) {
             props.onClearHours,
             props.onClearSessions,
             props.onClearFilters,
+            language,
           )}
           <div class="usage-presets">
             ${datePresets.map(
@@ -5325,9 +5342,10 @@ export function renderUsage(props: UsageProps) {
       buildPeakErrorHours(aggregateSessions, props.timeZone),
       displaySessionCount,
       totalSessions,
+      language,
     )}
 
-    ${renderUsageMosaic(aggregateSessions, props.timeZone, props.selectedHours, props.onSelectHour)}
+    ${renderUsageMosaic(aggregateSessions, props.timeZone, props.selectedHours, props.onSelectHour, language)}
 
     <!-- Two-column layout: Daily+Breakdown on left, Sessions on right -->
     <div class="usage-grid">
@@ -5340,8 +5358,9 @@ export function renderUsage(props: UsageProps) {
             props.dailyChartMode,
             props.onDailyChartModeChange,
             props.onSelectDay,
+            language,
           )}
-          ${displayTotals ? renderCostBreakdownCompact(displayTotals, props.chartMode) : nothing}
+          ${displayTotals ? renderCostBreakdownCompact(displayTotals, props.chartMode, language) : nothing}
         </div>
       </div>
       <div class="usage-grid-right">
@@ -5361,6 +5380,7 @@ export function renderUsage(props: UsageProps) {
           props.visibleColumns,
           totalSessions,
           props.onClearSessions,
+          language,
         )}
       </div>
     </div>
@@ -5397,6 +5417,7 @@ export function renderUsage(props: UsageProps) {
             props.contextExpanded,
             props.onToggleContextExpanded,
             props.onClearSessions,
+            language,
           )
         : renderEmptyDetailState()
     }

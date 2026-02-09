@@ -10,9 +10,11 @@ import { OpenClawApp } from "./app.ts";
 import { ChatState, loadChatHistory } from "./controllers/chat.ts";
 import { icons } from "./icons.ts";
 import { iconForTab, pathForTab, titleForTab, type Tab } from "./navigation.ts";
+import { t } from "./i18n.ts";
 
 export function renderTab(state: AppViewState, tab: Tab) {
   const href = pathForTab(tab, state.basePath);
+  const title = t(`tab${titleForTab(tab)}` as any, state.settings.language) || titleForTab(tab);
   return html`
     <a
       href=${href}
@@ -31,10 +33,10 @@ export function renderTab(state: AppViewState, tab: Tab) {
         event.preventDefault();
         state.setTab(tab);
       }}
-      title=${titleForTab(tab)}
+      title=${title}
     >
       <span class="nav-item__icon" aria-hidden="true">${icons[iconForTab(tab)]}</span>
-      <span class="nav-item__text">${titleForTab(tab)}</span>
+      <span class="nav-item__text">${title}</span>
     </a>
   `;
 }
@@ -144,7 +146,7 @@ export function renderChatControls(state: AppViewState) {
             });
           }
         }}
-        title="Refresh chat data"
+        title="${t("refreshChat", state.settings.language)}"
       >
         ${refreshIcon}
       </button>
@@ -164,8 +166,8 @@ export function renderChatControls(state: AppViewState) {
         aria-pressed=${showThinking}
         title=${
           disableThinkingToggle
-            ? "Disabled during onboarding"
-            : "Toggle assistant thinking/working output"
+            ? t("disabledOnboarding", state.settings.language)
+            : t("toggleThinking", state.settings.language)
         }
       >
         ${icons.brain}
@@ -185,8 +187,8 @@ export function renderChatControls(state: AppViewState) {
         aria-pressed=${focusActive}
         title=${
           disableFocusToggle
-            ? "Disabled during onboarding"
-            : "Toggle focus mode (hide sidebar + page header)"
+            ? t("disabledOnboarding", state.settings.language)
+            : t("toggleFocus", state.settings.language)
         }
       >
         ${focusIcon}
@@ -292,14 +294,14 @@ export function renderThemeToggle(state: AppViewState) {
 
   return html`
     <div class="theme-toggle" style="--theme-index: ${index};">
-      <div class="theme-toggle__track" role="group" aria-label="Theme">
+      <div class="theme-toggle__track" role="group" aria-label="${t("theme", state.settings.language)}">
         <span class="theme-toggle__indicator"></span>
         <button
           class="theme-toggle__button ${state.theme === "system" ? "active" : ""}"
           @click=${applyTheme("system")}
           aria-pressed=${state.theme === "system"}
-          aria-label="System theme"
-          title="System"
+          aria-label="${t("systemTheme", state.settings.language)}"
+          title="${t("system", state.settings.language)}"
         >
           ${renderMonitorIcon()}
         </button>
@@ -307,8 +309,8 @@ export function renderThemeToggle(state: AppViewState) {
           class="theme-toggle__button ${state.theme === "light" ? "active" : ""}"
           @click=${applyTheme("light")}
           aria-pressed=${state.theme === "light"}
-          aria-label="Light theme"
-          title="Light"
+          aria-label="${t("lightTheme", state.settings.language)}"
+          title="${t("light", state.settings.language)}"
         >
           ${renderSunIcon()}
         </button>
@@ -316,8 +318,8 @@ export function renderThemeToggle(state: AppViewState) {
           class="theme-toggle__button ${state.theme === "dark" ? "active" : ""}"
           @click=${applyTheme("dark")}
           aria-pressed=${state.theme === "dark"}
-          aria-label="Dark theme"
-          title="Dark"
+          aria-label="${t("darkTheme", state.settings.language)}"
+          title="${t("dark", state.settings.language)}"
         >
           ${renderMoonIcon()}
         </button>
@@ -358,6 +360,23 @@ function renderMonitorIcon() {
       <rect width="20" height="14" x="2" y="3" rx="2"></rect>
       <line x1="8" x2="16" y1="21" y2="21"></line>
       <line x1="12" x2="12" y1="17" y2="21"></line>
-    </svg>
+  `;
+}
+
+export function renderLanguageToggle(state: AppViewState) {
+  const toggleLanguage = () => {
+    const next = state.settings.language === "en" ? "zh" : "en";
+    state.applySettings({ ...state.settings, language: next });
+  };
+
+  return html`
+    <button
+      class="btn btn--sm btn--text"
+      @click=${toggleLanguage}
+      title=${t("language", state.settings.language)}
+      style="font-family: var(--font-mono); font-size: 11px; opacity: 0.8;"
+    >
+      ${state.settings.language === "zh" ? "EN" : "中"}
+    </button>
   `;
 }

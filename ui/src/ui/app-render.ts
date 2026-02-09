@@ -3,7 +3,12 @@ import type { AppViewState } from "./app-view-state.ts";
 import type { UsageState } from "./controllers/usage.ts";
 import { parseAgentSessionKey } from "../../../src/routing/session-key.js";
 import { refreshChatAvatar } from "./app-chat.ts";
-import { renderChatControls, renderTab, renderThemeToggle } from "./app-render.helpers.ts";
+import {
+  renderChatControls,
+  renderTab,
+  renderThemeToggle,
+  renderLanguageToggle,
+} from "./app-render.helpers.ts";
 import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
@@ -53,6 +58,7 @@ import {
 import { loadUsage, loadSessionTimeSeries, loadSessionLogs } from "./controllers/usage.ts";
 import { icons } from "./icons.ts";
 import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
+import { t } from "./i18n.ts";
 
 // Module-scope debounce for usage date changes (avoids type-unsafe hacks on state object)
 let usageDateDebounceTimeout: number | null = null;
@@ -127,8 +133,9 @@ export function renderApp(state: AppViewState) {
                 ...state.settings,
                 navCollapsed: !state.settings.navCollapsed,
               })}
-            title="${state.settings.navCollapsed ? "Expand sidebar" : "Collapse sidebar"}"
-            aria-label="${state.settings.navCollapsed ? "Expand sidebar" : "Collapse sidebar"}"
+              })}
+            title="${state.settings.navCollapsed ? t("expandSidebar", state.settings.language) : t("collapseSidebar", state.settings.language)}"
+            aria-label="${state.settings.navCollapsed ? t("expandSidebar", state.settings.language) : t("collapseSidebar", state.settings.language)}"
           >
             <span class="nav-collapse-toggle__icon">${icons.menu}</span>
           </button>
@@ -138,16 +145,17 @@ export function renderApp(state: AppViewState) {
             </div>
             <div class="brand-text">
               <div class="brand-title">OPENCLAW</div>
-              <div class="brand-sub">Gateway Dashboard</div>
+              <div class="brand-sub">${t("gatewayDashboard", state.settings.language)}</div>
             </div>
           </div>
         </div>
         <div class="topbar-status">
           <div class="pill">
             <span class="statusDot ${state.connected ? "ok" : ""}"></span>
-            <span>Health</span>
-            <span class="mono">${state.connected ? "OK" : "Offline"}</span>
+            <span>${t("health", state.settings.language)}</span>
+            <span class="mono">${state.connected ? t("ok", state.settings.language) : t("offline", state.settings.language)}</span>
           </div>
+          ${renderLanguageToggle(state)}
           ${renderThemeToggle(state)}
         </div>
       </header>
@@ -169,7 +177,7 @@ export function renderApp(state: AppViewState) {
                 }}
                 aria-expanded=${!isGroupCollapsed}
               >
-                <span class="nav-label__text">${group.label}</span>
+                <span class="nav-label__text">${t(`group${group.label}` as any, state.settings.language)}</span>
                 <span class="nav-label__chevron">${isGroupCollapsed ? "+" : "−"}</span>
               </button>
               <div class="nav-group__items">
@@ -180,7 +188,7 @@ export function renderApp(state: AppViewState) {
         })}
         <div class="nav-group nav-group--links">
           <div class="nav-label nav-label--static">
-            <span class="nav-label__text">Resources</span>
+            <span class="nav-label__text">${t("resources", state.settings.language)}</span>
           </div>
           <div class="nav-group__items">
             <a
@@ -188,10 +196,10 @@ export function renderApp(state: AppViewState) {
               href="https://docs.openclaw.ai"
               target="_blank"
               rel="noreferrer"
-              title="Docs (opens in new tab)"
+              title="${t("docs", state.settings.language)} (opens in new tab)"
             >
               <span class="nav-item__icon" aria-hidden="true">${icons.book}</span>
-              <span class="nav-item__text">Docs</span>
+              <span class="nav-item__text">${t("docs", state.settings.language)}</span>
             </a>
           </div>
         </div>
@@ -199,8 +207,22 @@ export function renderApp(state: AppViewState) {
       <main class="content ${isChat ? "content--chat" : ""}">
         <section class="content-header">
           <div>
-            ${state.tab === "usage" ? nothing : html`<div class="page-title">${titleForTab(state.tab)}</div>`}
-            ${state.tab === "usage" ? nothing : html`<div class="page-sub">${subtitleForTab(state.tab)}</div>`}
+            ${
+              state.tab === "usage"
+                ? nothing
+                : html`<div class="page-title">
+                    ${t(`title${titleForTab(state.tab)}` as any, state.settings.language) ||
+                    titleForTab(state.tab)}
+                  </div>`
+            }
+            ${
+              state.tab === "usage"
+                ? nothing
+                : html`<div class="page-sub">
+                    ${t(`sub${titleForTab(state.tab)}` as any, state.settings.language) ||
+                    subtitleForTab(state.tab)}
+                  </div>`
+            }
           </div>
           <div class="page-meta">
             ${state.lastError ? html`<div class="pill danger">${state.lastError}</div>` : nothing}
@@ -318,6 +340,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "usage"
             ? renderUsage({
+                language: state.settings.language,
                 loading: state.usageLoading,
                 error: state.usageError,
                 startDate: state.usageStartDate,
@@ -616,6 +639,7 @@ export function renderApp(state: AppViewState) {
                 activePanel: state.agentsPanel,
                 configForm: configValue,
                 configLoading: state.configLoading,
+                language: state.settings.language,
                 configSaving: state.configSaving,
                 configDirty: state.configFormDirty,
                 channelsLoading: state.channelsLoading,
@@ -1055,6 +1079,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "chat"
             ? renderChat({
+                language: state.settings.language,
                 sessionKey: state.sessionKey,
                 onSessionKeyChange: (next) => {
                   state.sessionKey = next;

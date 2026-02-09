@@ -1,137 +1,140 @@
-# Changelog
+# 更新日志
 
-Docs: https://docs.openclaw.ai
+文档: https://docs.openclaw.ai
 
 ## 2026.2.6-4
 
-### Added
+### 新增
 
-- Gateway: add `agents.create`, `agents.update`, `agents.delete` RPC methods for web UI agent management. (#11045) Thanks @advaitpaliwal.
-- Gateway: add node command allowlists (default-deny unknown node commands; configurable via `gateway.nodes.allowCommands` / `gateway.nodes.denyCommands`). (#11755) Thanks @mbelinky.
-- Plugins: add `device-pair` (Telegram `/pair` flow) and `phone-control` (iOS/Android node controls). (#11755) Thanks @mbelinky.
-- iOS: add alpha iOS node app (Telegram setup-code pairing + Talk/Chat surfaces). (#11756) Thanks @mbelinky.
-- Docs: seed initial ja-JP translations (POC) and make docs-i18n prompts language-pluggable for Japanese. (#11988) Thanks @joshp123.
-- Paths: add `OPENCLAW_HOME` environment variable for overriding the home directory used by all internal path resolution. (#12091) Thanks @sebslight.
+- Gateway: 添加 `agents.create`, `agents.update`, `agents.delete` RPC 方法用于 web UI agent 管理。(#11045) 感谢 @advaitpaliwal.
+- Gateway: 添加 node 命令允许列表 (默认拒绝未知 node 命令; 可通过 `gateway.nodes.allowCommands` / `gateway.nodes.denyCommands` 配置)。(#11755) 感谢 @mbelinky.
+- Plugins: 添加 `device-pair` (Telegram `/pair` 流程) 和 `phone-control` (iOS/Android node 控制)。(#11755) 感谢 @mbelinky.
+- iOS: 添加 alpha 版 iOS node 应用 (Telegram 设置码配对 + Talk/Chat 表面)。(#11756) 感谢 @mbelinky.
+- Docs: 植入初始 ja-JP 翻译 (POC) 并使 docs-i18n 提示语针对日语可插拔。(#11988) 感谢 @joshp123.
+- Paths: 添加 `OPENCLAW_HOME` 环境变量用于覆盖所有内部路径解析使用的主目录。(#12091) 感谢 @sebslight.
 
-### Fixes
+### 修复
 
-- Errors: prevent false positive context overflow detection when conversation mentions "context overflow" topic. (#2078) Thanks @sbking.
-- Model failover: treat HTTP 400 errors as failover-eligible, enabling automatic model fallback when providers return bad request errors. (#1879) Thanks @orenyomtov.
-- Exec approvals: format forwarded command text as inline/fenced monospace for safer approval scanning across channels. (#11937)
-- Config: clamp `maxTokens` to `contextWindow` to prevent invalid model configs. (#5516) Thanks @lailoo.
-- Docs: fix language switcher ordering and Japanese locale flag in Mintlify nav. (#12023) Thanks @joshp123.
-- Paths: make internal path resolution respect `HOME`/`USERPROFILE` before `os.homedir()` across config, agents, sessions, pairing, cron, and CLI profiles. (#12091) Thanks @sebslight.
-- Paths: structurally resolve `OPENCLAW_HOME`-derived home paths and fix Windows drive-letter handling in tool meta shortening. (#12125) Thanks @mcaxtr.
-- Thinking: allow xhigh for `github-copilot/gpt-5.2-codex` and `github-copilot/gpt-5.2`. (#11646) Thanks @seans-openclawbot.
-- Discord: support forum/media `thread create` starter messages, wire `message thread create --message`, and harden thread-create routing. (#10062) Thanks @jarvis89757.
-- Gateway: stabilize chat routing by canonicalizing node session keys for node-originated chat methods. (#11755) Thanks @mbelinky.
-- Web UI: make chat refresh smoothly scroll to the latest messages and suppress new-messages badge flash during manual refresh.
-- Cron: route text-only isolated agent announces through the shared subagent announce flow; add exponential backoff for repeated errors; preserve future `nextRunAtMs` on restart; include current-boundary schedule matches; prevent stale threadId reuse across targets; and add per-job execution timeout. (#11641) Thanks @tyler6204.
-- Cron tool: recover flat params when LLM omits the `job` wrapper for add requests. (#11310, #12124) Thanks @tyler6204.
-- Cron scheduler: fix `nextRun` skipping the current occurrence when computed mid-second. (#12124) Thanks @tyler6204.
-- Subagents: stabilize announce timing, preserve compaction metrics across retries, clamp overflow-prone long timeouts, and cap impossible context usage token totals. (#11551) Thanks @tyler6204.
-- Agents: recover from context overflow caused by oversized tool results (pre-emptive capping + fallback truncation). (#11579) Thanks @tyler6204.
-- Gateway: no more post-compaction amnesia; injected transcript writes now preserve Pi session `parentId` chain so agents can remember again. Thanks @Takhoffman 🦞.
-- Telegram: render markdown spoilers with `<tg-spoiler>` HTML tags. (#11543) Thanks @ezhikkk.
-- Telegram: recover proactive sends when stale topic thread IDs are used by retrying without `message_thread_id`, and clear explicit no-thread route updates instead of inheriting stale thread state. (#11620)
-- Gateway/CLI: when `gateway.bind=lan`, use a LAN IP for probe URLs and Control UI links. (#11448) Thanks @AnonO6.
-- Memory: set Voyage embeddings `input_type` for improved retrieval. (#10818) Thanks @mcinteerj.
-- Memory/QMD: run boot refresh in background by default, add configurable QMD maintenance timeouts, and retry QMD after fallback failures. (#9690, #9705)
-- Memory/QMD: log explicit warnings when `memory.qmd.scope` blocks a search request. (#10191)
-- Memory/QMD: reuse default model cache across agents instead of re-downloading per agent. (#12114) Thanks @tyler6204.
-- Media understanding: recognize `.caf` audio attachments for transcription. (#10982) Thanks @succ985.
-- State dir: honor `OPENCLAW_STATE_DIR` for default device identity and canvas storage paths. (#4824) Thanks @kossoy.
-- Doctor/State dir: suppress repeated legacy migration warnings only for valid symlink mirrors, while keeping warnings for empty or invalid legacy trees. (#11709) Thanks @gumadeiras.
-- Tests: harden flaky hotspots by removing timer sleeps, consolidating onboarding provider-auth coverage, and improving memory test realism. (#11598) Thanks @gumadeiras.
-- macOS: honor Nix-managed defaults suite (`ai.openclaw.mac`) for nixMode to prevent onboarding from reappearing after bundle-id churn. (#12205) Thanks @joshp123.
+- Errors: 防止当对话提及 "context overflow" 主题时发生误报的上下文溢出检测。(#2078) 感谢 @sbking.
+- Model failover: 将 HTTP 400 错误视为符合故障转移条件，以便在提供商返回 bad request 错误时启用自动模型回退。(#1879) 感谢 @orenyomtov.
+- Exec approvals: 将转发的命令文本格式化为内联/围栏等宽字体，以便跨渠道进行更安全的批准扫描。(#11937)
+- Config: 将 `maxTokens` 限制为 `contextWindow` 以防止无效的模型配置。(#5516) 感谢 @lailoo.
+- Docs: 修复 Mintlify 导航中的语言切换排序和日语区域标志。(#12023) 感谢 @joshp123.
+- Paths: 使内部路径解析在 config, agents, sessions, pairing, cron, 和 CLI profiles 中优先尊守 `HOME`/`USERPROFILE` 而非 `os.homedir()`。(#12091) 感谢 @sebslight.
+- Paths: 结构化解析 `OPENCLAW_HOME` 派生的主路径并修复工具元数据缩短中的 Windows 盘符处理。(#12125) 感谢 @mcaxtr.
+- Thinking: 允许 `github-copilot/gpt-5.2-codex` 和 `github-copilot/gpt-5.2` 使用 xhigh。(#11646) 感谢 @seans-openclawbot.
+- Discord: 支持 forum/media `thread create` 启动消息，连接 `message thread create --message`，并加强 thread-create 路由。(#10062) 感谢 @jarvis89757.
+- Gateway: 通过规范化 node 发起的聊天方法的 node 会话密钥来稳定聊天路由。(#11755) 感谢 @mbelinky.
+- Web UI: 使聊天刷新平滑滚动到最新消息并在手动刷新期间抑制新消息徽章闪烁。
+- Cron: 通过共享的 subagent 公告流程路由纯文本隔离 agent 公告；为重复错误添加指数退避；在重启时保留未来的 `nextRunAtMs`；包含当前边界计划匹配；防止跨目标重用陈旧的 threadId；并添加每个作业的执行超时。(#11641) 感谢 @tyler6204.
+- Cron tool: 当 LLM 省略添加请求的 `job` 包装器时恢复扁平参数。(#11310, #12124) 感谢 @tyler6204.
+- Cron scheduler: 修复在秒中计算时 `nextRun` 跳过当前发生的问题。(#12124) 感谢 @tyler6204.
+- Subagents: 稳定公告时间，跨重试保留压缩指标，限制易溢出的长超时，并限制不可能的上下文使用令牌总数。(#11551) 感谢 @tyler6204.
+- Agents: 从过大的工具结果导致的上下文溢出中恢复 (抢先限制 + 回退截断)。(#11579) 感谢 @tyler6204.
+- Gateway: 不再有压缩后的遗忘；注入的脚本写入现在保留 Pi session `parentId` 链以便 agents 可以再次记忆。感谢 @Takhoffman 🦞.
+- Telegram: 使用 `<tg-spoiler>` HTML 标签渲染 markdown 剧透。(#11543) 感谢 @ezhikkk.
+- Telegram: 当 stale topic thread IDs 被使用时，通过重试而不带 `message_thread_id` 来恢复主动发送，并清除显式的 no-thread 路由更新而不是继承 stale thread state。(#11620)
+- Gateway/CLI: 当 `gateway.bind=lan` 时，使用 LAN IP 作为探测 URLs 和 Control UI 链接。(#11448) 感谢 @AnonO6.
+- Memory: 设置 Voyage embeddings `input_type` 以改进检索。(#10818) 感谢 @mcinteerj.
+- Memory/QMD: 默认在后台运行启动刷新，添加可配置的 QMD 维护超时，并在回退失败后重试 QMD。(#9690, #9705)
+- Memory/QMD: 当 `memory.qmd.scope` 阻止搜索请求时记录明确警告。(#10191)
+- Memory/QMD: 跨 agents 重用默认模型缓存而不是每个 agent 重新下载。(#12114) 感谢 @tyler6204.
+- Media understanding: 识别 `.caf` 音频附件用于转录。(#10982) 感谢 @succ985.
+- State dir: 遵守 `OPENCLAW_STATE_DIR` 用于默认设备标识和 canvas 存储路径。(#4824) 感谢 @kossoy.
+- Doctor/State dir: 仅对有效符号链接镜像抑制重复的遗留迁移警告，同时保留空或无效遗留树的警告。(#11709) 感谢 @gumadeiras.
+- Tests: 通过移除计时器休眠、整合入职提供商认证覆盖率和提高内存测试真实性来加固不稳定的热点。(#11598) 感谢 @gumadeiras.
+- macOS: 遵守 Nix 管理的默认套件 (`ai.openclaw.mac`) 用于 nixMode 以防止在 bundle-id 变动后重新出现入职流程。(#12205) 感谢 @joshp123.
 
 ## 2026.2.6
 
-### Changes
+### 变更
 
-- Hygiene: remove `workspace:*` from `dependencies` in msteams, nostr, zalo extensions (breaks external `npm install`; keep in `devDependencies` only).
-- Hygiene: add non-root `sandbox` user to `Dockerfile.sandbox` and `Dockerfile.sandbox-browser`.
-- Hygiene: remove dead `vitest` key from `package.json` (superseded by `vitest.config.ts`).
-- Hygiene: remove redundant top-level `overrides` from `package.json` (pnpm uses `pnpm.overrides`).
-- Hygiene: sync `onlyBuiltDependencies` between `pnpm-workspace.yaml` and `package.json` (add missing `node-llama-cpp`, sort alphabetically).
-- Cron: default `wakeMode` is now `"now"` for new jobs (was `"next-heartbeat"`). (#10776) Thanks @tyler6204.
-- Cron: `cron run` defaults to force execution; use `--due` to restrict to due-only. (#10776) Thanks @tyler6204.
-- Models: support Anthropic Opus 4.6 and OpenAI Codex gpt-5.3-codex (forward-compat fallbacks). (#9853, #10720, #9995) Thanks @TinyTb, @calvin-hpnet, @tyler6204.
-- Providers: add xAI (Grok) support. (#9885) Thanks @grp06.
-- Providers: add Baidu Qianfan support. (#8868) Thanks @ide-rea.
-- Web UI: add token usage dashboard. (#10072) Thanks @Takhoffman.
-- Memory: native Voyage AI support. (#7078) Thanks @mcinteerj.
-- Sessions: cap sessions_history payloads to reduce context overflow. (#10000) Thanks @gut-puncture.
-- CLI: sort commands alphabetically in help output. (#8068) Thanks @deepsoumya617.
-- CI: optimize pipeline throughput (macOS consolidation, Windows perf, workflow concurrency). (#10784) Thanks @mcaxtr.
-- Agents: bump pi-mono to 0.52.7; add embedded forward-compat fallback for Opus 4.6 model ids.
+- Hygiene: 从 msteams, nostr, zalo 扩展的 `dependencies` 中移除 `workspace:*` (破坏外部 `npm install`；仅保留在 `devDependencies` 中)。
+- Hygiene: 添加非 root `sandbox` 用户到 `Dockerfile.sandbox` 和 `Dockerfile.sandbox-browser`。
+- Hygiene: 从 `package.json` 中移除废弃的 `vitest` 键 (被 `vitest.config.ts`取代)。
+- Hygiene: 从 `package.json` 中移除冗余的顶层 `overrides` (pnpm 使用 `pnpm.overrides`)。
+- Hygiene: 在 `pnpm-workspace.yaml` 和 `package.json` 之间同步 `onlyBuiltDependencies` (添加缺失的 `node-llama-cpp`, 按字母顺序排序)。
+- Cron: 新作业的默认 `wakeMode` 现在是 `"now"` (原为 `"next-heartbeat"`)。(#10776) 感谢 @tyler6204.
+- Cron: `cron run` 默认为强制执行；使用 `--due` 限制为仅到期。(#10776) 感谢 @tyler6204.
+- Models: 支持 Anthropic Opus 4.6 和 OpenAI Codex gpt-5.3-codex (前向兼容回退)。(#9853, #10720, #9995) 感谢 @TinyTb, @calvin-hpnet, @tyler6204.
+- Providers: 添加 xAI (Grok) 支持。(#9885) 感谢 @grp06.
+- Providers: 添加百度千帆支持。(#8868) 感谢 @ide-rea.
+- Web UI: 添加令牌使用仪表板。(#10072) 感谢 @Takhoffman.
+- Memory: 原生 Voyage AI 支持。(#7078) 感谢 @mcinteerj.
+- Sessions: 限制 sessions_history 负载以减少上下文溢出。(#10000) 感谢 @gut-puncture.
+- CLI: 在帮助输出中按字母顺序排序命令。(#8068) 感谢 @deepsoumya617.
+- CI: 优化管道吞吐量 (macOS 整合, Windows 性能, 工作流并发)。(#10784) 感谢 @mcaxtr.
+- Agents: 升级 pi-mono 到 0.52.7; 添加嵌入式前向兼容回退用于 Opus 4.6 model ids.
 
-### Added
+### 新增
 
-- Cron: run history deep-links to session chat from the dashboard. (#10776) Thanks @tyler6204.
-- Cron: per-run session keys in run log entries and default labels for cron sessions. (#10776) Thanks @tyler6204.
-- Cron: legacy payload field compatibility (`deliver`, `channel`, `to`, `bestEffortDeliver`) in schema. (#10776) Thanks @tyler6204.
+- Cron: 从仪表板运行历史深链接到会话聊天。(#10776) 感谢 @tyler6204.
+- Cron: 运行日志条目中的每次运行会话密钥和 cron 会话的默认标签。(#10776) 感谢 @tyler6204.
+- Cron: 模式中的遗留有效载荷字段兼容性 (`deliver`, `channel`, `to`, `bestEffortDeliver`)。(#10776) 感谢 @tyler6204.
 
-### Fixes
+### 修复
 
-- Cron: scheduler reliability (timer drift, restart catch-up, lock contention, stale running markers). (#10776) Thanks @tyler6204.
-- Cron: store migration hardening (legacy field migration, parse error handling, explicit delivery mode persistence). (#10776) Thanks @tyler6204.
-- Telegram: auto-inject DM topic threadId in message tool + subagent announce. (#7235) Thanks @Lukavyi.
-- Security: require auth for Gateway canvas host and A2UI assets. (#9518) Thanks @coygeek.
-- Cron: fix scheduling and reminder delivery regressions; harden next-run recompute + timer re-arming + legacy schedule fields. (#9733, #9823, #9948, #9932) Thanks @tyler6204, @pycckuu, @j2h4u, @fujiwara-tofu-shop.
-- Update: harden Control UI asset handling in update flow. (#10146) Thanks @gumadeiras.
-- Security: add skill/plugin code safety scanner; redact credentials from config.get gateway responses. (#9806, #9858) Thanks @abdelsfane.
-- Exec approvals: coerce bare string allowlist entries to objects. (#9903) Thanks @mcaxtr.
-- Slack: add mention stripPatterns for /new and /reset. (#9971) Thanks @ironbyte-rgb.
-- Chrome extension: fix bundled path resolution. (#8914) Thanks @kelvinCB.
-- Compaction/errors: allow multiple compaction retries on context overflow; show clear billing errors. (#8928, #8391) Thanks @Glucksberg.
+- Cron: 调度器可靠性 (计时器漂移, 重启追赶, 锁争用, 陈旧运行标记)。(#10776) 感谢 @tyler6204.
+- Cron: 存储迁移加固 (遗留字段迁移, 解析错误处理, 显式交付模式持久化)。(#10776) 感谢 @tyler6204.
+- Telegram: 在消息工具 + subagent 公告中自动注入 DM topic threadId。(#7235) 感谢 @Lukavyi.
+- Security: 要求 Gateway canvas host 和 A2UI 资产进行认证。(#9518) 感谢 @coygeek.
+- Cron: 修复调度和提醒交付回归；加固下次运行重新计算 + 计时器重新布防 + 遗留调度字段。(#9733, #9823, #9948, #9932) 感谢 @tyler6204, @pycckuu, @j2h4u, @fujiwara-tofu-shop.
+- Update: 加固更新流程中的 Control UI 资产处理。(#10146) 感谢 @gumadeiras.
+- Security: 添加 skill/plugin 代码安全扫描器；从 config.get gateway 响应中编辑凭据。(#9806, #9858) 感谢 @abdelsfane.
+- Exec approvals: 将裸字符串白名单条目强制转换为对象。(#9903) 感谢 @mcaxtr.
+- Slack: 为 /new 和 /reset 添加提及 stripPatterns。(#9971) 感谢 @ironbyte-rgb.
+- Chrome extension: 修复捆绑路径解析。(#8914) 感谢 @kelvinCB.
+- Compaction/errors: 允许上下文溢出时多次压缩重试；显示清晰的计费错误。(#8928, #8391) 感谢 @Glucksberg.
 
 ## 2026.2.3
 
-### Changes
+### 变更
 
-- Telegram: remove last `@ts-nocheck` from `bot-handlers.ts`, use Grammy types directly, deduplicate `StickerMetadata`. Zero `@ts-nocheck` remaining in `src/telegram/`. (#9206)
-- Telegram: remove `@ts-nocheck` from `bot-message.ts`, type deps via `Omit<BuildTelegramMessageContextParams>`, widen `allMedia` to `TelegramMediaRef[]`. (#9180)
-- Telegram: remove `@ts-nocheck` from `bot.ts`, fix duplicate `bot.catch` error handler (Grammy overrides), remove dead reaction `message_thread_id` routing, harden sticker cache guard. (#9077)
-- Telegram: allow per-group and per-topic `groupPolicy` overrides under `channels.telegram.groups`. (#9775) Thanks @nicolasstanley.
-- Telegram: add video note support (`asVideoNote: true`) for media sends, with docs + tests. (#7902) Thanks @thewulf7.
-- Feishu: expand channel handling (posts with images, doc links, routing, reactions/typing, replies, native commands). (#8975) Thanks @jiulingyun.
-- Onboarding: add Cloudflare AI Gateway provider setup and docs. (#7914) Thanks @roerohan.
-- Onboarding: add Moonshot (.cn) auth choice and keep the China base URL when preserving defaults. (#7180) Thanks @waynelwz.
-- Docs: clarify tmux send-keys for TUI by splitting text and Enter. (#7737) Thanks @Wangnov.
-- Docs: mirror the landing page revamp for zh-CN (features, quickstart, docs directory, network model, credits). (#8994) Thanks @joshp123.
-- Messages: add per-channel and per-account responsePrefix overrides across channels. (#9001) Thanks @mudrii.
-- Cron: add announce delivery mode for isolated jobs (CLI + Control UI) and delivery mode config.
-- Cron: default isolated jobs to announce delivery; accept ISO 8601 `schedule.at` in tool inputs.
-- Cron: hard-migrate isolated jobs to announce/none delivery; drop legacy post-to-main/payload delivery fields and `atMs` inputs.
-- Cron: delete one-shot jobs after success by default; add `--keep-after-run` for CLI.
-- Cron: suppress messaging tools during announce delivery so summaries post consistently.
-- Cron: avoid duplicate deliveries when isolated runs send messages directly.
+- Telegram: 移除 `bot-handlers.ts` 中最后一个 `@ts-nocheck`，直接使用 Grammy 类型，去重 `StickerMetadata`。`src/telegram/` 中剩余零个 `@ts-nocheck`。(#9206)
+- Telegram: 移除 `bot-message.ts` 中的 `@ts-nocheck`，通过 `Omit<BuildTelegramMessageContextParams>` 类型化依赖，将 `allMedia` 扩展为 `TelegramMediaRef[]`。(#9180)
+- Telegram: 移除 `bot.ts` 中的 `@ts-nocheck`，修复重复的 `bot.catch` 错误处理程序 (Grammy 覆盖)，移除死反应 `message_thread_id` 路由，加固贴纸缓存守卫。(#9077)
+- Telegram: 允许在 `channels.telegram.groups` 下覆盖每个组和每个主题的 `groupPolicy`。(#9775) 感谢 @nicolasstanley.
+- Telegram: 支持媒体发送的视频笔记 (`asVideoNote: true`)，附带文档 + 测试。(#7902) 感谢 @thewulf7.
+- Feishu: 扩展渠道处理 (带有图像的帖子、文档链接、路由、反应/输入、回复、原生命令)。(#8975) 感谢 @jiulingyun.
+- Onboarding: 添加 Cloudflare AI Gateway 供应商设置和文档。(#7914) 感谢 @roerohan.
+- Onboarding: 添加 Moonshot (.cn) 认证选择并在保留默认值时保持中国基础 URL。(#7180) 感谢 @waynelwz.
+- Docs: 通过拆分文本和回车来澄清 TUI 的 tmux send-keys。(#7737) 感谢 @Wangnov.
+- Docs: 镜像 zh-CN 的着陆页改版 (功能、快速开始、文档目录、网络模型、致谢)。(#8994) 感谢 @joshp123.
+- Messages: 添加跨渠道的每渠道和每账户 responsePrefix 覆盖。(#9001) 感谢 @mudrii.
+- Cron: 为隔离作业添加公告交付模式 (CLI + Control UI) 和交付模式配置。
+- Cron: 默认隔离作业为公告交付；在工具输入中接受 ISO 8601 `schedule.at`。
+- Cron: 强制迁移隔离作业到 公告/无 交付；丢弃遗留的 post-to-main/payload 交付字段和 `atMs` 输入。
+- Cron: 默认在成功后删除一次性作业；CLI 添加 `--keep-after-run`。
+- Cron: 在公告交付期间抑制消息工具以便摘要一致发布。
+- Cron: 当隔离运行直接发送消息时避免重复交付。
 
-### Fixes
+### 修复
 
-- Heartbeat: allow explicit accountId routing for multi-account channels. (#8702) Thanks @lsh411.
-- Routing: refresh bindings per message by loading config at route resolution so binding changes apply without restart. (#11372) Thanks @juanpablodlc.
-- TUI/Gateway: handle non-streaming finals, refresh history for non-local chat runs, and avoid event gap warnings for targeted tool streams. (#8432) Thanks @gumadeiras.
-- Security: stop exposing Gateway auth tokens via URL query parameters in Control UI entrypoints, and reject hook tokens in query parameters. (#9436) Thanks @coygeek.
-- Skills: ignore Python venvs and common cache/build folders in the skills watcher to prevent FD exhaustion. (#12399) Thanks @kylehowells.
-- Shell completion: auto-detect and migrate slow dynamic patterns to cached files for faster terminal startup; add completion health checks to doctor/update/onboard.
-- Telegram: honor session model overrides in inline model selection. (#8193) Thanks @gildo.
-- Web UI: fix agent model selection saves for default/non-default agents and wrap long workspace paths. Thanks @Takhoffman.
-- Web UI: resolve header logo path when `gateway.controlUi.basePath` is set. (#7178) Thanks @Yeom-JinHo.
-- Web UI: apply button styling to the new-messages indicator.
-- Onboarding: infer auth choice from non-interactive API key flags. (#8484) Thanks @f-trycua.
-- Security: keep untrusted channel metadata out of system prompts (Slack/Discord). Thanks @KonstantinMirin.
-- Security: enforce sandboxed media paths for message tool attachments. (#9182) Thanks @victormier.
-- Security: require explicit credentials for gateway URL overrides to prevent credential leakage. (#8113) Thanks @victormier.
-- Security: gate `whatsapp_login` tool to owner senders and default-deny non-owner contexts. (#8768) Thanks @victormier.
-- Voice call: harden webhook verification with host allowlists/proxy trust and keep ngrok loopback bypass.
-- Voice call: add regression coverage for anonymous inbound caller IDs with allowlist policy. (#8104) Thanks @victormier.
-- Cron: accept epoch timestamps and 0ms durations in CLI `--at` parsing.
-- Cron: reload store data when the store file is recreated or mtime changes.
-- Cron: deliver announce runs directly, honor delivery mode, and respect wakeMode for summaries. (#8540) Thanks @tyler6204.
-- Telegram: include forward_from_chat metadata in forwarded messages and harden cron delivery target checks. (#8392) Thanks @Glucksberg.
-- macOS: fix cron payload summary rendering and ISO 8601 formatter concurrency safety.
+- Heartbeat: 允许明确的 accountId 路由用于多账户渠道。(#8702) 感谢 @lsh411.
+- Routing: 通过在路由解析时加载配置来刷新每条消息的绑定，以便绑定更改无需重启即可生效。(#11372) 感谢 @juanpablodlc.
+- TUI/Gateway: 处理非流式 finals，刷新非本地聊天运行的历史记录，并避免目标工具流的事件间隙警告。(#8432) 感谢 @gumadeiras.
+- Security: 停止通过 Control UI 入口点中的 URL 查询参数暴露 Gateway 认证令牌，并拒绝查询参数中的钩子令牌。(#9436) 感谢 @coygeek.
+- Skills: 在技能监视器中忽略 Python venvs 和常见缓存/构建文件夹以防止 FD 耗尽。(#12399) 感谢 @kylehowells.
+- Shell completion: 自动检测并将缓慢的动态模式迁移到缓存文件以加快终端启动；添加 completion 健康检查到 doctor/update/onboard。
+- Telegram: 在内联模型选择中遵守会话模型覆盖。(#8193) 感谢 @gildo.
+- Web UI: 修复默认/非默认 agents 的 agent 模型选择保存并包装长工作区路径。感谢 @Takhoffman.
+- Web UI: 当设置了 `gateway.controlUi.basePath` 时解析标头标志路径。(#7178) 感谢 @Yeom-JinHo.
+- Web UI: 将按钮样式应用于新消息指示器。
+- Onboarding: 从非交互式 API 密钥标志推断认证选择。(#8484) 感谢 @f-trycua.
+- Security: 保持不可信的渠道元数据处于系统提示之外 (Slack/Discord)。感谢 @KonstantinMirin.
+- Security: 为消息工具附件强制执行沙盒媒体路径。(#9182) 感谢 @victormier.
+- Security: 要求网关 URL 覆盖的显式凭据以防止凭据泄漏。(#8113) 感谢 @victormier.
+- Security: 将 `whatsapp_login` 工具限制为所有者发送者并默认拒绝非所有者上下文。(#8768) 感谢 @victormier.
+- Voice call: 使用主机白名单/代理信任加固 webhook 验证并保留 ngrok 环回绕过。
+- Voice call: 为带白名单策略的匿名入站来电者 ID 添加回归覆盖。(#8104) 感谢 @victormier.
+- Cron: 在 CLI `--at` 解析中接受 epoch 时间戳和 0ms 持续时间。
+- Cron: 当存储文件重新创建或 mtime 更改时重新加载存储数据。
+- Cron: 直接交付公告运行，遵守交付模式，并尊守摘要的 wakeMode。(#8540) 感谢 @tyler6204.
+- Telegram: 在转发的消息中包含 forward_from_chat 元数据并加固 cron 交付目标检查。(#8392) 感谢 @Glucksberg.
+- macOS: 修复 cron 有效载荷摘要渲染和 ISO 8601 格式化程序并发安全性。
+
+
+## 历史更新日志 (Historical Logs)
 
 ## 2026.2.2-3
 

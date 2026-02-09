@@ -39,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ai.openclaw.android.chat.ChatSessionEntry
+import androidx.compose.ui.res.stringResource
+import ai.openclaw.android.R
 
 @Composable
 fun ChatComposer(
@@ -85,7 +87,7 @@ fun ChatComposer(
             onClick = { showSessionMenu = true },
             contentPadding = ButtonDefaults.ContentPadding,
           ) {
-            Text("Session: $currentSessionLabel")
+            Text(stringResource(R.string.label_session, currentSessionLabel))
           }
 
           DropdownMenu(expanded = showSessionMenu, onDismissRequest = { showSessionMenu = false }) {
@@ -98,7 +100,7 @@ fun ChatComposer(
                 },
                 trailingIcon = {
                   if (entry.key == sessionKey) {
-                    Text("✓")
+                    Text(stringResource(R.string.label_checked))
                   } else {
                     Spacer(modifier = Modifier.width(10.dp))
                   }
@@ -113,7 +115,7 @@ fun ChatComposer(
             onClick = { showThinkingMenu = true },
             contentPadding = ButtonDefaults.ContentPadding,
           ) {
-            Text("Thinking: ${thinkingLabel(thinkingLevel)}")
+            Text(stringResource(R.string.label_thinking, thinkingLabel(thinkingLevel)))
           }
 
           DropdownMenu(expanded = showThinkingMenu, onDismissRequest = { showThinkingMenu = false }) {
@@ -127,11 +129,11 @@ fun ChatComposer(
         Spacer(modifier = Modifier.weight(1f))
 
         FilledTonalIconButton(onClick = onRefresh, modifier = Modifier.size(42.dp)) {
-          Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+          Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.desc_refresh))
         }
 
         FilledTonalIconButton(onClick = onPickImages, modifier = Modifier.size(42.dp)) {
-          Icon(Icons.Default.AttachFile, contentDescription = "Add image")
+          Icon(Icons.Default.AttachFile, contentDescription = stringResource(R.string.desc_add_image))
         }
       }
 
@@ -143,7 +145,7 @@ fun ChatComposer(
         value = input,
         onValueChange = { input = it },
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text("Message OpenClaw…") },
+        placeholder = { Text(stringResource(R.string.hint_message)) },
         minLines = 2,
         maxLines = 6,
       )
@@ -161,7 +163,7 @@ fun ChatComposer(
                 contentColor = Color(0xFFE74C3C),
               ),
           ) {
-            Icon(Icons.Default.Stop, contentDescription = "Abort")
+            Icon(Icons.Default.Stop, contentDescription = stringResource(R.string.desc_abort))
           }
         } else {
           FilledTonalIconButton(onClick = {
@@ -169,7 +171,7 @@ fun ChatComposer(
             input = ""
             onSend(text)
           }, enabled = canSend) {
-            Icon(Icons.Default.ArrowUpward, contentDescription = "Send")
+            Icon(Icons.Default.ArrowUpward, contentDescription = stringResource(R.string.desc_send))
           }
         }
       }
@@ -204,7 +206,7 @@ private fun ConnectionPill(sessionLabel: String, healthOk: Boolean) {
       ) {}
       Text(sessionLabel, style = MaterialTheme.typography.labelSmall)
       Text(
-        if (healthOk) "Connected" else "Connecting…",
+        if (healthOk) stringResource(R.string.status_connected) else stringResource(R.string.status_connecting),
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
@@ -227,7 +229,7 @@ private fun ThinkingMenuItem(
     },
     trailingIcon = {
       if (value == current.trim().lowercase()) {
-        Text("✓")
+        Text(stringResource(R.string.label_checked))
       } else {
         Spacer(modifier = Modifier.width(10.dp))
       }
@@ -235,13 +237,15 @@ private fun ThinkingMenuItem(
   )
 }
 
+@Composable
 private fun thinkingLabel(raw: String): String {
-  return when (raw.trim().lowercase()) {
-    "low" -> "Low"
-    "medium" -> "Medium"
-    "high" -> "High"
-    else -> "Off"
+  val resId = when (raw.trim().lowercase()) {
+    "low" -> R.string.thinking_low
+    "medium" -> R.string.thinking_medium
+    "high" -> R.string.thinking_high
+    else -> R.string.thinking_off
   }
+  return stringResource(resId)
 }
 
 @Composable
@@ -278,7 +282,7 @@ private fun AttachmentChip(fileName: String, onRemove: () -> Unit) {
         onClick = onRemove,
         modifier = Modifier.size(30.dp),
       ) {
-        Text("×")
+        Text(stringResource(R.string.label_remove))
       }
     }
   }

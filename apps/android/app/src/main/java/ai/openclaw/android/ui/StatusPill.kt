@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import ai.openclaw.android.R
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun StatusPill(
@@ -53,7 +55,7 @@ fun StatusPill(
         ) {}
 
         Text(
-          text = gateway.title,
+          text = stringResource(gateway.titleRes),
           style = MaterialTheme.typography.labelLarge,
         )
       }
@@ -83,7 +85,7 @@ fun StatusPill(
       } else {
         Icon(
           imageVector = if (voiceEnabled) Icons.Default.Mic else Icons.Default.MicOff,
-          contentDescription = if (voiceEnabled) "Voice enabled" else "Voice disabled",
+          contentDescription = if (voiceEnabled) stringResource(R.string.desc_voice_enabled) else stringResource(R.string.desc_voice_disabled),
           tint =
             if (voiceEnabled) {
               overlayIconColor()
@@ -106,9 +108,9 @@ data class StatusActivity(
   val tint: Color? = null,
 )
 
-enum class GatewayState(val title: String, val color: Color) {
-  Connected("Connected", Color(0xFF2ECC71)),
-  Connecting("Connecting…", Color(0xFFF1C40F)),
-  Error("Error", Color(0xFFE74C3C)),
-  Disconnected("Offline", Color(0xFF9E9E9E)),
+enum class GatewayState(val titleRes: Int, val color: Color) {
+  Connected(R.string.status_connected, Color(0xFF2ECC71)),
+  Connecting(R.string.status_connecting, Color(0xFFF1C40F)),
+  Error(R.string.status_error, Color(0xFFE74C3C)),
+  Disconnected(R.string.status_offline, Color(0xFF9E9E9E)),
 }
