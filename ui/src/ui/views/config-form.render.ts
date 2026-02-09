@@ -3,8 +3,11 @@ import type { ConfigUiHints } from "../types.ts";
 import { icons } from "../icons.ts";
 import { renderNode } from "./config-form.node.ts";
 import { hintForPath, humanize, schemaType, type JsonSchema } from "./config-form.shared.ts";
+import { t } from "../i18n.ts";
+import type { Language } from "../storage.ts";
 
 export type ConfigFormProps = {
+  language: Language;
   schema: JsonSchema | null;
   uiHints: ConfigUiHints;
   value: Record<string, unknown> | null;
@@ -278,26 +281,28 @@ function getSectionIcon(key: string) {
   return sectionIcons[key as keyof typeof sectionIcons] ?? sectionIcons.default;
 }
 
-function matchesSearch(key: string, schema: JsonSchema, query: string): boolean {
+function matchesSearch(key: string, schema: JsonSchema, query: string, lang: Language): boolean {
   if (!query) {
     return true;
   }
   const q = query.toLowerCase();
-  const meta = SECTION_META[key];
+  
+  const labelKey = `configSection_${key}` as any;
+  const descKey = `configDesc_${key}` as any;
+  const label = t(labelKey, lang);
+  const description = t(descKey, lang);
 
   // Check key name
   if (key.toLowerCase().includes(q)) {
     return true;
   }
 
-  // Check label and description
-  if (meta) {
-    if (meta.label.toLowerCase().includes(q)) {
-      return true;
-    }
-    if (meta.description.toLowerCase().includes(q)) {
-      return true;
-    }
+  // Check translated label and description
+  if (label !== labelKey && label.toLowerCase().includes(q)) {
+    return true;
+  }
+  if (description !== descKey && description.toLowerCase().includes(q)) {
+    return true;
   }
 
   return schemaMatches(schema, q);
@@ -355,7 +360,7 @@ function schemaMatches(schema: JsonSchema, query: string): boolean {
 export function renderConfigForm(props: ConfigFormProps) {
   if (!props.schema) {
     return html`
-      <div class="muted">Schema unavailable.</div>
+      <div class="muted">${t("msgUnsupportedSchema", props.language).replace(". Use Raw mode.", "")}</div>
     `;
   }
   const schema = props.schema;
@@ -384,7 +389,7 @@ export function renderConfigForm(props: ConfigFormProps) {
     if (activeSection && key !== activeSection) {
       return false;
     }
-    if (searchQuery && !matchesSearch(key, node, searchQuery)) {
+    if (searchQuery && !matchesSearch(key, node, searchQuery, props.language)) {
       return false;
     }
     return true;
@@ -413,7 +418,7 @@ export function renderConfigForm(props: ConfigFormProps) {
       <div class="config-empty">
         <div class="config-empty__icon">${icons.search}</div>
         <div class="config-empty__text">
-          ${searchQuery ? `No settings match "${searchQuery}"` : "No settings in this section"}
+          ${searchQuery ? `${t("msgNoRecentSessions", props.language).replace("No recent sessions", "No settings match")} "${searchQuery}"` : t("msgNoItems", props.language).replace("No items yet. Click \"Add\" to create one.", "No settings in this section")}
         </div>
       </div>
     `;
@@ -426,7 +431,11 @@ export function renderConfigForm(props: ConfigFormProps) {
           ? (() => {
               const { sectionKey, subsectionKey, schema: node } = subsectionContext;
               const hint = hintForPath([sectionKey, subsectionKey], props.uiHints);
-              const label = hint?.label ?? node.title ?? humanize(subsectionKey);
+              const label =
+                t(`configSubsection_${sectionKey}_${subsectionKey}` as any, props.language) ||
+                hint?.label ||
+                node.title ||
+                humanize(subsectionKey);
               const description = hint?.help ?? node.description ?? "";
               const sectionValue = value[sectionKey];
               const scopedValue =
@@ -457,26 +466,31 @@ export function renderConfigForm(props: ConfigFormProps) {
                     disabled: props.disabled ?? false,
                     showLabel: false,
                     onPatch: props.onPatch,
+                    language: props.language,
                   })}
                 </div>
               </section>
             `;
             })()
           : filteredEntries.map(([key, node]) => {
-              const meta = SECTION_META[key] ?? {
-                label: key.charAt(0).toUpperCase() + key.slice(1),
-                description: node.description ?? "",
-              };
+              const labelKey = `configSection_${key}` as any;
+              const descKey = `configDesc_${key}` as any;
+              const label = t(labelKey, props.language);
+              const description = t(descKey, props.language);
+              const meta = SECTION_META[key];
+
+              const effectiveLabel = label !== labelKey ? label : (meta?.label ?? humanize(key));
+              const effectiveDesc = description !== descKey ? description : (meta?.description ?? node.description ?? "");
 
               return html`
               <section class="config-section-card" id="config-section-${key}">
                 <div class="config-section-card__header">
                   <span class="config-section-card__icon">${getSectionIcon(key)}</span>
                   <div class="config-section-card__titles">
-                    <h3 class="config-section-card__title">${meta.label}</h3>
+                    <h3 class="config-section-card__title">${effectiveLabel}</h3>
                     ${
-                      meta.description
-                        ? html`<p class="config-section-card__desc">${meta.description}</p>`
+                      effectiveDesc
+                        ? html`<p class="config-section-card__desc">${effectiveDesc}</p>`
                         : nothing
                     }
                   </div>
@@ -491,6 +505,7 @@ export function renderConfigForm(props: ConfigFormProps) {
                     disabled: props.disabled ?? false,
                     showLabel: false,
                     onPatch: props.onPatch,
+                    language: props.language,
                   })}
                 </div>
               </section>

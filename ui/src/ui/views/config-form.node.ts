@@ -9,6 +9,8 @@ import {
   schemaType,
   type JsonSchema,
 } from "./config-form.shared.ts";
+import { t } from "../i18n.ts";
+import type { Language } from "../storage.ts";
 
 const META_KEYS = new Set(["title", "description", "default", "nullable"]);
 
@@ -104,8 +106,9 @@ export function renderNode(params: {
   disabled: boolean;
   showLabel?: boolean;
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult | typeof nothing {
-  const { schema, value, path, hints, unsupported, disabled, onPatch } = params;
+  const { schema, value, path, hints, unsupported, disabled, onPatch, language } = params;
   const showLabel = params.showLabel ?? true;
   const type = schemaType(schema);
   const hint = hintForPath(path, hints);
@@ -116,7 +119,7 @@ export function renderNode(params: {
   if (unsupported.has(key)) {
     return html`<div class="cfg-field cfg-field--error">
       <div class="cfg-field__label">${label}</div>
-      <div class="cfg-field__error">Unsupported schema node. Use Raw mode.</div>
+      <div class="cfg-field__error">${t("msgUnsupportedSchema", language).replace(". Use Raw mode.", "")}</div>
     </div>`;
   }
 
@@ -128,7 +131,7 @@ export function renderNode(params: {
     );
 
     if (nonNull.length === 1) {
-      return renderNode({ ...params, schema: nonNull[0] });
+      return renderNode({ ...params, schema: nonNull[0], language });
     }
 
     // Check if it's a set of literal values (enum-like)
@@ -177,7 +180,7 @@ export function renderNode(params: {
 
     if (allLiterals && literals.length > 5) {
       // Use dropdown for larger sets
-      return renderSelect({ ...params, options: literals, value: value ?? schema.default });
+      return renderSelect({ ...params, options: literals, value: value ?? schema.default, language });
     }
 
     // Handle mixed primitive types
@@ -195,6 +198,7 @@ export function renderNode(params: {
         return renderNode({
           ...params,
           schema: { ...schema, type: "boolean", anyOf: undefined, oneOf: undefined },
+          language,
         });
       }
 
@@ -202,6 +206,7 @@ export function renderNode(params: {
         return renderTextInput({
           ...params,
           inputType: hasNumber && !hasString ? "number" : "text",
+          language,
         });
       }
     }
@@ -233,7 +238,7 @@ export function renderNode(params: {
         </div>
       `;
     }
-    return renderSelect({ ...params, options, value: value ?? schema.default });
+    return renderSelect({ ...params, options, value: value ?? schema.default, language });
   }
 
   // Object type - collapsible section
@@ -275,19 +280,19 @@ export function renderNode(params: {
 
   // Number/Integer
   if (type === "number" || type === "integer") {
-    return renderNumberInput(params);
+    return renderNumberInput({ ...params, language });
   }
 
   // String
   if (type === "string") {
-    return renderTextInput({ ...params, inputType: "text" });
+    return renderTextInput({ ...params, inputType: "text", language });
   }
 
   // Fallback
   return html`
     <div class="cfg-field cfg-field--error">
       <div class="cfg-field__label">${label}</div>
-      <div class="cfg-field__error">Unsupported type: ${type}. Use Raw mode.</div>
+      <div class="cfg-field__error">${t("unknown", language)} type: ${type}.</div>
     </div>
   `;
 }
@@ -301,8 +306,9 @@ function renderTextInput(params: {
   showLabel?: boolean;
   inputType: "text" | "number";
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult {
-  const { schema, value, path, hints, disabled, onPatch, inputType } = params;
+  const { schema, value, path, hints, disabled, onPatch, inputType, language } = params;
   const showLabel = params.showLabel ?? true;
   const hint = hintForPath(path, hints);
   const label = hint?.label ?? schema.title ?? humanize(String(path.at(-1)));
@@ -314,7 +320,7 @@ function renderTextInput(params: {
     (isSensitive
       ? "••••"
       : schema.default !== undefined
-        ? `Default: ${String(schema.default)}`
+        ? `${t("labelDefault", language)}: ${String(schema.default)}`
         : "");
   const displayValue = value ?? "";
 
@@ -356,7 +362,7 @@ function renderTextInput(params: {
           <button
             type="button"
             class="cfg-input__reset"
-            title="Reset to default"
+            title=${t("refresh", language)}
             ?disabled=${disabled}
             @click=${() => onPatch(path, schema.default)}
           >↺</button>
@@ -376,8 +382,9 @@ function renderNumberInput(params: {
   disabled: boolean;
   showLabel?: boolean;
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult {
-  const { schema, value, path, hints, disabled, onPatch } = params;
+  const { schema, value, path, hints, disabled, onPatch, language } = params;
   const showLabel = params.showLabel ?? true;
   const hint = hintForPath(path, hints);
   const label = hint?.label ?? schema.title ?? humanize(String(path.at(-1)));
@@ -427,8 +434,9 @@ function renderSelect(params: {
   showLabel?: boolean;
   options: unknown[];
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult {
-  const { schema, value, path, hints, disabled, options, onPatch } = params;
+  const { schema, value, path, hints, disabled, options, onPatch, language } = params;
   const showLabel = params.showLabel ?? true;
   const hint = hintForPath(path, hints);
   const label = hint?.label ?? schema.title ?? humanize(String(path.at(-1)));
@@ -452,7 +460,7 @@ function renderSelect(params: {
           onPatch(path, val === unset ? undefined : options[Number(val)]);
         }}
       >
-        <option value=${unset}>Select...</option>
+        <option value=${unset}>${t("refresh", language).replace("刷新", "选择").replace("Refresh", "Select")}...</option>
         ${options.map(
           (opt, idx) => html`
           <option value=${String(idx)}>${String(opt)}</option>
@@ -472,8 +480,9 @@ function renderObject(params: {
   disabled: boolean;
   showLabel?: boolean;
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult {
-  const { schema, value, path, hints, unsupported, disabled, onPatch } = params;
+  const { schema, value, path, hints, unsupported, disabled, onPatch, language } = params;
   const hint = hintForPath(path, hints);
   const label = hint?.label ?? schema.title ?? humanize(String(path.at(-1)));
   const help = hint?.help ?? schema.description;
@@ -513,6 +522,7 @@ function renderObject(params: {
             unsupported,
             disabled,
             onPatch,
+            language,
           }),
         )}
         ${
@@ -526,6 +536,7 @@ function renderObject(params: {
                 disabled,
                 reservedKeys: reserved,
                 onPatch,
+                language,
               })
             : nothing
         }
@@ -551,6 +562,7 @@ function renderObject(params: {
             unsupported,
             disabled,
             onPatch,
+            language,
           }),
         )}
         ${
@@ -564,6 +576,7 @@ function renderObject(params: {
                 disabled,
                 reservedKeys: reserved,
                 onPatch,
+                language,
               })
             : nothing
         }
@@ -581,8 +594,9 @@ function renderArray(params: {
   disabled: boolean;
   showLabel?: boolean;
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult {
-  const { schema, value, path, hints, unsupported, disabled, onPatch } = params;
+  const { schema, value, path, hints, unsupported, disabled, onPatch, language } = params;
   const showLabel = params.showLabel ?? true;
   const hint = hintForPath(path, hints);
   const label = hint?.label ?? schema.title ?? humanize(String(path.at(-1)));
@@ -604,7 +618,7 @@ function renderArray(params: {
     <div class="cfg-array">
       <div class="cfg-array__header">
         ${showLabel ? html`<span class="cfg-array__label">${label}</span>` : nothing}
-        <span class="cfg-array__count">${arr.length} item${arr.length !== 1 ? "s" : ""}</span>
+        <span class="cfg-array__count">${arr.length} ${arr.length === 1 ? t("labelSubsection", language) : t("labelAllSubsections", language).replace("所有", "").replace("All", "")}</span>
         <button
           type="button"
           class="cfg-array__add"
@@ -615,7 +629,7 @@ function renderArray(params: {
           }}
         >
           <span class="cfg-array__add-icon">${icons.plus}</span>
-          Add
+          ${t("btnAdd", language)}
         </button>
       </div>
       ${help ? html`<div class="cfg-array__help">${help}</div>` : nothing}
@@ -623,7 +637,7 @@ function renderArray(params: {
       ${
         arr.length === 0
           ? html`
-              <div class="cfg-array__empty">No items yet. Click "Add" to create one.</div>
+              <div class="cfg-array__empty">${t("msgNoItems", language)}</div>
             `
           : html`
         <div class="cfg-array__items">
@@ -635,7 +649,7 @@ function renderArray(params: {
                 <button
                   type="button"
                   class="cfg-array__item-remove"
-                  title="Remove item"
+                  title=${t("btnRemoveItem", language)}
                   ?disabled=${disabled}
                   @click=${() => {
                     const next = [...arr];
@@ -656,6 +670,7 @@ function renderArray(params: {
                   disabled,
                   showLabel: false,
                   onPatch,
+                  language,
                 })}
               </div>
             </div>
@@ -677,15 +692,16 @@ function renderMapField(params: {
   disabled: boolean;
   reservedKeys: Set<string>;
   onPatch: (path: Array<string | number>, value: unknown) => void;
+  language: Language;
 }): TemplateResult {
-  const { schema, value, path, hints, unsupported, disabled, reservedKeys, onPatch } = params;
+  const { schema, value, path, hints, unsupported, disabled, reservedKeys, onPatch, language } = params;
   const anySchema = isAnySchema(schema);
   const entries = Object.entries(value ?? {}).filter(([key]) => !reservedKeys.has(key));
 
   return html`
     <div class="cfg-map">
       <div class="cfg-map__header">
-        <span class="cfg-map__label">Custom entries</span>
+        <span class="cfg-map__label">${t("labelSettings", language)}</span>
         <button
           type="button"
           class="cfg-map__add"
@@ -703,14 +719,14 @@ function renderMapField(params: {
           }}
         >
           <span class="cfg-map__add-icon">${icons.plus}</span>
-          Add Entry
+          ${t("btnAdd", language)}
         </button>
       </div>
 
       ${
         entries.length === 0
           ? html`
-              <div class="cfg-map__empty">No custom entries.</div>
+              <div class="cfg-map__empty">${t("labelNoChanges", language)}</div>
             `
           : html`
         <div class="cfg-map__items">
@@ -723,7 +739,7 @@ function renderMapField(params: {
                   <input
                     type="text"
                     class="cfg-input cfg-input--sm"
-                    placeholder="Key"
+                    placeholder=${t("labelKey", language)}
                     .value=${key}
                     ?disabled=${disabled}
                     @change=${(e: Event) => {
@@ -775,13 +791,14 @@ function renderMapField(params: {
                           disabled,
                           showLabel: false,
                           onPatch,
+                          language,
                         })
                   }
                 </div>
                 <button
                   type="button"
                   class="cfg-map__item-remove"
-                  title="Remove entry"
+                  title=${t("btnRemoveEntry", language)}
                   ?disabled=${disabled}
                   @click=${() => {
                     const next = { ...value };

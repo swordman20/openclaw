@@ -604,6 +604,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "cron"
             ? renderCron({
+                settings: state.settings,
                 basePath: state.basePath,
                 loading: state.cronLoading,
                 status: state.cronStatus,
@@ -979,6 +980,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "skills"
             ? renderSkills({
+                settings: state.settings,
                 loading: state.skillsLoading,
                 report: state.skillsReport,
                 error: state.skillsError,
@@ -1000,6 +1002,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "nodes"
             ? renderNodes({
+                settings: state.settings,
                 loading: state.nodesLoading,
                 nodes: state.nodes,
                 devicesLoading: state.devicesLoading,
@@ -1159,6 +1162,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "config"
             ? renderConfig({
+                settings: state.settings,
                 raw: state.configRaw,
                 originalRaw: state.configRawOriginal,
                 valid: state.configValid,
@@ -1199,6 +1203,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "debug"
             ? renderDebug({
+                settings: state.settings,
                 loading: state.debugLoading,
                 status: state.debugStatus,
                 health: state.debugHealth,
@@ -1220,6 +1225,7 @@ export function renderApp(state: AppViewState) {
         ${
           state.tab === "logs"
             ? renderLogs({
+                settings: state.settings,
                 loading: state.logsLoading,
                 error: state.logsError,
                 file: state.logsFile,
